@@ -3,7 +3,8 @@
 .vscode/
 __pycache__/
 chainlit.md
-memory
+/memory/
+/py/memory/
 .files
 **/.claude/settings.local.json
 .python-version
