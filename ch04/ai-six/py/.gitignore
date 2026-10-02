@@ -54,8 +54,11 @@ shelf/
 # Environment files
 **/.env
 **/.env.*
+!**/.env.example
 
 # Chainlit
 **/.chailit
 **/.files
 **/cainlit.md
+# Frontend config files (copy from config_template.*)
+frontend/**/config.*
