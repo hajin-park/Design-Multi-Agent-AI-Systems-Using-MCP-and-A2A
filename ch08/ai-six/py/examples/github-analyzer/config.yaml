@@ -1,15 +1,15 @@
-default_model_id: gpt-5
+default_model_id: gpt-4o
 tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/tools
+  - ${AI6_PY_DIR}/backend/tools
 mcp_tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/mcp_tools
-memory_dir: ${HOME}/git/ai-six/memory/github-analyzer
+  - ${AI6_PY_DIR}/backend/mcp_tools
+memory_dir: ${AI6_PY_DIR}/memory/github-analyzer
 checkpoint_interval: 3
 provider_config:
   openai:
     api_key: ${OPENAI_API_KEY}
   ollama:
-      model: qwen2.5-coder:32b
+      model: llama3.1:8b
 enabled_tools:
   - gh
 system_prompt: |

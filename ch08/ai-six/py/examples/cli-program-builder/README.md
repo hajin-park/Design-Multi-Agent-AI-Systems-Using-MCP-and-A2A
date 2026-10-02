@@ -17,24 +17,26 @@ Together, they can build complete Python CLI applications from user specificatio
 
 ## Setup
 
-**Install Python Dependencies**: Make sure you have Python and `uv` installed for running the agent system.
+**Python environment**: the examples use the AI-6 virtual environment in `py/venv` (see the chapter README):
 
-On Mac:
-
-```bash   
-  brew install uv
+```bash
+cd ch08/ai-six/py
+source venv/bin/activate
 ```
 
-On other platforms, follow the [uv installation guide](https://docs.astral.sh/uv/getting-started/installation/).
+**Model**: `config.yaml` uses `gpt-4o` with `OPENAI_API_KEY` (from your environment or `py/.env`). To use a local
+Ollama model instead, set `default_model_id` and `provider_config.ollama.model` in `config.yaml` to the same
+tool-capable model (e.g. `llama3.1:8b`). Paths in `config.yaml` use `${AI6_PY_DIR}`, which the script sets to the
+`py` directory automatically.
 
 **No additional authentication is required** - the agent system works entirely with local Python development tools.
 
 ## Running the Agent
 
-**Run the Agent**: Use `uv run` to start the Python CLI builder:
+**Run the Agent** from this directory:
 
 ```bash
-uv run cli_program_builder.py
+python cli_program_builder.py
 ```
 
 **Command Line Options**:
@@ -46,14 +48,14 @@ Examples:
 
 ```bash
 # Use default output directory
-uv run cli_program_builder.py
+python cli_program_builder.py
 
 # Specify custom output directory
-uv run cli_program_builder.py --output-dir ~/python-cli-projects
+python cli_program_builder.py --output-dir ~/python-cli-projects
 
 # Use environment variable
 export CLI_PROGRAM_BUILDER_OUTPUT_DIR=~/python-cli-projects
-uv run cli_program_builder.py
+python cli_program_builder.py
 ```
 
 ## Example Session
@@ -61,7 +63,7 @@ uv run cli_program_builder.py
 Here's a short session building a simple file organizer CLI:
 
 ```bash
-$ uv run cli_program_builder.py
+$ python cli_program_builder.py
 
 📁 Projects will be created in: /Users/username/cli-python-projects
 🔧 Starting Python CLI Program Builder
@@ -90,12 +92,12 @@ The agent uses a [multi-agent configuration](config.yaml) file that defines a pr
 sub-agents. The configuration file is structured as follows:
 
 ```yaml
-default_model_id: gpt-5
+default_model_id: gpt-4o
 tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/tools
+  - ${AI6_PY_DIR}/backend/tools
 mcp_tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/mcp_tools
-memory_dir: ${HOME}/git/ai-six/memory/cli-program-builder
+  - ${AI6_PY_DIR}/backend/mcp_tools
+memory_dir: ${AI6_PY_DIR}/memory/cli-program-builder
 checkpoint_interval: 3
 provider_config:
   openai:

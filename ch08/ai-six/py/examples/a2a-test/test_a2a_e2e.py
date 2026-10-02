@@ -13,6 +13,7 @@ This single test validates the complete async-to-sync A2A bridge functionality:
 import sys
 import os
 import time
+import signal
 import subprocess
 import requests
 import logging
@@ -22,6 +23,8 @@ from typing import Optional
 
 # Add project root to path
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..', '..'))
+# Config files refer to the py directory as ${AI6_PY_DIR}
+os.environ.setdefault('AI6_PY_DIR', os.path.abspath(os.path.join(os.path.dirname(__file__), '..', '..')))
 
 from backend.agent.agent import Agent
 from backend.agent.config import Config
@@ -66,7 +69,10 @@ class A2AComprehensiveE2ETest:
 
     def check_service(self, name: str, url: str, expected_response: str = None) -> bool:
         """Check if a service is running."""
-        response = requests.get(url, timeout=5)
+        try:
+            response = requests.get(url, timeout=5)
+        except requests.exceptions.ConnectionError:
+            return False
         if expected_response and expected_response not in response.text:
             return False
         return response.status_code == 200
@@ -76,7 +82,8 @@ class A2AComprehensiveE2ETest:
         print("🔧 Checking Ollama service...")
 
         # Check if ollama is already running
-        if self.check_service("Ollama", "http://localhost:11434/api/tags"):
+        ollama_host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+        if self.check_service("Ollama", f"{ollama_host}/api/tags"):
             print("✅ Ollama already running")
             return True
 
@@ -92,7 +99,7 @@ class A2AComprehensiveE2ETest:
 
             # Wait for ollama to start
             for i in range(30):  # 30 second timeout
-                if self.check_service("Ollama", "http://localhost:11434/api/tags"):
+                if self.check_service("Ollama", f"{ollama_host}/api/tags"):
                     print("✅ Ollama started successfully")
                     return True
                 time.sleep(1)
@@ -124,21 +131,25 @@ class A2AComprehensiveE2ETest:
             return True
 
         print("🚀 Starting k8s-ai A2A server...")
-        k8s_ai_path = Path.home() / "git" / "k8s-ai"
+        # The k8s-ai A2A server lives next to ai-six in this chapter (ch08/k8s-ai)
+        k8s_ai_path = Path(__file__).resolve().parents[4] / "k8s-ai"
         if not k8s_ai_path.exists():
             self.log_error(f"k8s-ai not found at {k8s_ai_path}")
             return False
 
         try:
             # Start server in background
-            cmd = ['python', '-m', 'k8s_ai.server.main', '--context', 'kind-k8s-ai',
+            cmd = ['uv', 'run', 'k8s-ai-server', '--context', os.environ.get('K8S_AI_CONTEXT', 'kind-k8s-ai'),
                    '--host', '127.0.0.1', '--port', '9999']
+            if os.environ.get('A2A_API_KEY'):
+                cmd += ['--auth-key', os.environ['A2A_API_KEY']]
             self.server_process = subprocess.Popen(
                 cmd,
                 cwd=k8s_ai_path,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.STDOUT,
-                text=True
+                text=True,
+                start_new_session=True  # own process group, so cleanup also stops the child of `uv run`
             )
 
             # Wait for server to start
@@ -509,11 +520,11 @@ class A2AComprehensiveE2ETest:
         # Stop k8s-ai server
         if self.server_process:
             print("   Stopping k8s-ai server...")
-            self.server_process.terminate()
+            os.killpg(self.server_process.pid, signal.SIGTERM)
             try:
                 self.server_process.wait(timeout=5)
             except subprocess.TimeoutExpired:
-                self.server_process.kill()
+                os.killpg(self.server_process.pid, signal.SIGKILL)
 
         # Note: Don't stop Ollama as it might be used by other processes
         # Just let the user know

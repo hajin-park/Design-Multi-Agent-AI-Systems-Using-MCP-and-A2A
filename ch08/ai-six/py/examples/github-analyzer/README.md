@@ -32,11 +32,23 @@ and follow the prompts:
   gh auth login
 ```
 
+**Python environment**: the examples use the AI-6 virtual environment in `py/venv` (see the chapter README):
+
+```bash
+cd ch08/ai-six/py
+source venv/bin/activate
+```
+
+**Model**: `config.yaml` uses `gpt-4o` with `OPENAI_API_KEY` (from your environment or `py/.env`). To use a local
+Ollama model instead, set `default_model_id` and `provider_config.ollama.model` in `config.yaml` to the same
+tool-capable model (e.g. `llama3.1:8b`). Paths in `config.yaml` use `${AI6_PY_DIR}`, which the script sets to the
+`py` directory automatically.
+
 ## Running the Agent
 
-**Run the Agent**: Use `uv run` to execute the analyzer:
+**Run the Agent** from this directory:
 ```bash
-uv run github_analyzer.py <github_username>
+python github_analyzer.py <github_username>
 ```
 
 ## Example Session
@@ -44,7 +56,7 @@ uv run github_analyzer.py <github_username>
 Here's a short session analyzing the user `the-gigi`:
 
 ```bash
-$ uv run github_analyzer.py the-gigi
+$ python github_analyzer.py the-gigi
 
 🔍 Starting GitHub analysis for user: the-gigi
 ==============================================
@@ -104,12 +116,12 @@ system prompt for
 analyzing GitHub users. The configuration file is structured as follows:
 
 ```yaml
-default_model_id: gpt-5
+default_model_id: gpt-4o
 tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/tools
+  - ${AI6_PY_DIR}/backend/tools
 mcp_tools_dirs:
-  - ${HOME}/git/ai-six/py/backend/mcp_tools
-memory_dir: ${HOME}/git/ai-six/memory/github-analyzer
+  - ${AI6_PY_DIR}/backend/mcp_tools
+memory_dir: ${AI6_PY_DIR}/memory/github-analyzer
 checkpoint_interval: 3
 provider_config:
   openai:

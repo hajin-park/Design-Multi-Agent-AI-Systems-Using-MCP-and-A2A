@@ -16,6 +16,11 @@ from pathlib import Path
 # Go up two directories from examples/cli-program-builder to reach the 'py' directory  
 py_directory = Path(__file__).parent.parent.parent
 sys.path.insert(0, str(py_directory))
+# Config files refer to the py directory as ${AI6_PY_DIR}
+os.environ.setdefault('AI6_PY_DIR', str(py_directory.resolve()))
+
+from dotenv import load_dotenv
+load_dotenv()  # picks up py/.env (e.g. OPENAI_API_KEY)
 
 from backend.agent.agent import Agent
 from backend.agent.config import Config
