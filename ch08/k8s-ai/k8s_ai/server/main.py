@@ -209,15 +209,7 @@ def main():
     if args.auth_key:
         api_key_manager.add_single_key(args.auth_key)
     
-    # Check if we have any keys configured for authentication
-    use_auth = len(api_key_manager.keys) > 0 or args.auth_key
-    if not use_auth:
-        print("No authentication configured. Server will run without authentication!")
-        print("Use --auth-key <key> or --generate-key to enable authentication.")
-    else:
-        print(f"Authentication enabled with {len(api_key_manager.keys)} API key(s)")
-    
-    # Check for environment-based auth keys
+    # Check for environment-based auth keys (before deciding whether auth is enabled)
     env_keys = os.environ.get('K8S_AI_AUTH_KEYS')
     if env_keys:
         for key in env_keys.split(','):
@@ -225,6 +217,14 @@ def main():
             if key:
                 api_key_manager.add_single_key(key)
         print(f"Loaded {len(env_keys.split(','))} API key(s) from environment")
+
+    # Check if we have any keys configured for authentication
+    use_auth = len(api_key_manager.keys) > 0 or args.auth_key
+    if not use_auth:
+        print("No authentication configured. Server will run without authentication!")
+        print("Use --auth-key <key> or --generate-key to enable authentication.")
+    else:
+        print(f"Authentication enabled with {len(api_key_manager.keys)} API key(s)")
     
     # Define kubectl skill
     kubectl_skill = AgentSkill(
