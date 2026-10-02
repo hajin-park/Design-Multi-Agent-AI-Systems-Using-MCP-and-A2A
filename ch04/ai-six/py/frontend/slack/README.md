@@ -13,24 +13,37 @@ Using the API directly can be complex due to the need to handle HTTP requests, J
 
 To simplify, use the [Bolt library](https://tools.slack.dev/bolt-python/).
 
-Here's what you need to do:
+## Create the Slack app
 
-- Generate the [AI-6 Slack app](https://api.slack.com/apps) and configure necessary tokens.
-  - [app token](https://api.slack.com/apps/A08J2K4SF44/general) with connections:write scope
-  - [bot token](https://api.slack.com/apps/A08J2K4SF44/oauth?) with the needed permissions
-- Enable [socket mode](https://app.slack.com/app-settings/T08GRUKRA5Q/A08J2K4SF44/socket-mode) for real-time interaction.
-- Subscribe to [message events](https://api.slack.com/apps/event-subscriptions).
-- Install the app into your Slack workspace.
+1. Go to [api.slack.com/apps](https://api.slack.com/apps) and click **Create New App** -> **From a manifest**.
+   Pick your workspace and paste the contents of [slack_app_manifest.yaml](slack_app_manifest.yaml)
+   (YAML tab). It enables Socket Mode, subscribes to message events and requests the bot scopes AI-6 needs.
+2. **Basic Information** -> **App-Level Tokens** -> **Generate Token and Scopes**: add the `connections:write`
+   scope. The generated `xapp-...` token is your `AI6_APP_TOKEN`.
+3. **Install App** -> **Install to Workspace**. The **Bot User OAuth Token** (`xoxb-...`) is your `AI6_BOT_TOKEN`.
+4. Put both tokens in `py/.env` (see `py/.env.example`) or in `py/frontend/slack/.env`:
 
-## Python Setup
+   ```
+   AI6_APP_TOKEN=xapp-...
+   AI6_BOT_TOKEN=xoxb-...
+   ```
 
-Use a Python virtual environment and ensure all required packages are installed:
+5. In Slack, create a public channel whose name starts with `ai-6-` (e.g. `#ai-6-playground`). On startup AI-6
+   joins the first such channel and responds to every message posted there. In any other public channel,
+   invite the bot (`/invite @AI-6`) and mention it (`@AI-6 ...`).
+
+## Configure and run
 
 ```shell
-cd /Users/gigi/git/ai-six/py
-source venv/bin/activate
-pip install -r requirements.txt
+cd py
+source venv/bin/activate          # see py/README.md for creating it
+cp frontend/slack/config_template.toml frontend/slack/config.toml   # then set default_model_id
+cd ..
+./ai6.sh slack
 ```
+
+Each channel gets its own session, stored under `py/memory/slack/<channel_id>/`.
+Press `Ctrl+C` to stop; AI-6 posts a goodbye message and leaves the channels it joined.
 
 # Reference
 
