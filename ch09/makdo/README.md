@@ -1,175 +1,188 @@
 # MAKDO - Multi-Agent Kubernetes DevOps System
 
-A multi-agent system built on AI-6 framework for autonomous Kubernetes cluster management and DevOps operations.
+A multi-agent system built on the AI-6 framework (installed from PyPI as `ai-six`) for autonomous Kubernetes
+cluster management and DevOps operations.
 
 ## Architecture
 
-MAKDO consists of 4 specialized AI-6 agents:
+MAKDO consists of 4 specialized AI-6 agents, all defined in
+[src/makdo/agents/coordinator.yaml](src/makdo/agents/coordinator.yaml):
 
-1. **Coordinator Agent** - Main orchestrator and task dispatcher
-2. **Analyzer Agent** - Cluster health assessment using k8s-ai A2A server
-3. **Fixer Agent** - Safe cluster modification operations
-4. **Slack Agent** - User communication and notification interface
+1. **Coordinator Agent** - Main orchestrator; delegates to the other agents (each sub-agent is a tool of the coordinator)
+2. **Analyzer Agent** - Cluster health assessment through the k8s-ai A2A server's diagnostic skills
+3. **Fixer Agent** - Root-cause analysis and remediation recommendations (k8s-ai is read-only)
+4. **Slack Agent** - User communication via a small Slack MCP server ([src/makdo/mcp_tools/slack.py](src/makdo/mcp_tools/slack.py))
+
+`analyzer.yaml`, `fixer.yaml` and `slack.yaml` in the same directory describe each role on its own; the running
+system uses the combined `coordinator.yaml`.
+
+```
+             ┌──────────────┐
+             │ Coordinator  │  (health check every MAKDO_CHECK_INTERVAL seconds)
+             └──────┬───────┘
+      ┌─────────────┼──────────────┐
+┌─────▼────┐  ┌─────▼────┐  ┌──────▼─────┐
+│ Analyzer │  │  Fixer   │  │ Slack Bot  │──MCP──> Slack
+└─────┬────┘  └────┬─────┘  └────────────┘
+      └────A2A─────┘
+           │
+   ┌───────▼────────┐  session token   ┌──────────────┐
+   │ k8s-ai server  │ ───────────────> │ kind cluster │
+   └────────────────┘                  └──────────────┘
+```
 
 ## Features
 
-- **Multi-Cluster Support** - Manage multiple Kubernetes clusters from a single system
-- **Autonomous Operations** - Self-healing and proactive cluster management
-- **Slack Integration** - Natural language interaction via Slack channels
-- **Safety-First** - Validation and approval workflows for critical operations
-- **Session-Based** - Secure cluster access via k8s-ai session tokens
+- **Session-Based** - MAKDO registers the cluster with k8s-ai's Admin API and gets a session token for it
+- **Read-only diagnostics** - k8s-ai diagnoses issues and recommends fixes; it never changes the cluster
+- **Slack Integration** - Reports go to a Slack channel (optional)
+- **Multi-agent orchestration** - The coordinator decides which agent to involve
 
 ## Prerequisites
 
-1. **Kubernetes Clusters** - Local kind clusters or any Kubernetes clusters
-2. **OpenAI API Key** - For AI-6 agent operations
-3. **Slack Bot Credentials** - For Slack integration (optional)
-4. **Go** - For building Slack MCP server
-5. **Node.js/npm** - For potential npm packages
+1. **Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/)
+2. **Docker**, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) and `kubectl`
+3. **An LLM** - an OpenAI API key, or a tool-capable model served by [Ollama](https://ollama.com)
+   (e.g. `ollama pull llama3.1:8b`)
+4. **Slack bot token** - optional, only for posting reports to Slack
 
-## Complete Setup Instructions
+## Setup
 
-### 1. Environment Setup
+### 1. Install dependencies
 
 ```bash
-# Clone and setup
 cd ch09/makdo
-
-# Install dependencies
 uv sync
 
-# Copy and configure environment
+cd ../k8s-ai
+uv sync
+```
+
+### 2. Configure the environment
+
+```bash
+cd ch09/makdo
 cp .env.example .env
-# Edit .env with your OpenAI API key
-
-# Copy and configure system settings
-cp config/makdo.example.yaml config/makdo.yaml
-# Edit config/makdo.yaml with your cluster settings
+# Edit .env: OPENAI_API_KEY (or the Ollama lines), and optionally AI6_BOT_TOKEN
 ```
 
-### 2. Kubernetes Clusters Setup
+`config/makdo.yaml` holds the system settings (k8s-ai URLs, health check interval, logging).
+`config/makdo.example.yaml` is a fuller reference copy.
+
+### 3. Create a cluster to monitor and break it
 
 ```bash
-# Create test clusters (if not exists)
-kind create cluster --name k8s-ai
-kind create cluster --name makdo-test
-
-# Verify clusters
-kubectl config get-contexts
+kind create cluster --name makdo-test     # kube context: kind-makdo-test
+kubectl --context kind-makdo-test apply -f tests/fixtures/broken_workloads.yaml
 ```
 
-### 3. Slack MCP Server Setup
+This creates a `test-workload` namespace with a crash-looping pod, a pod whose image doesn't exist, and a healthy pod
+for comparison.
 
-The Slack MCP server is already built and included in `bin/slack-mcp-server`.
+### 4. Start the k8s-ai A2A server
 
-If you need to rebuild it:
+In a separate terminal:
+
 ```bash
-# Clone and build Slack MCP server
-git clone https://github.com/korotovsky/slack-mcp-server.git /tmp/slack-mcp-server
-cd /tmp/slack-mcp-server
-make build
-
-# Copy binary to MAKDO
-cp build/slack-mcp-server /path/to/makdo/bin/slack-mcp-server
-chmod +x bin/slack-mcp-server
+cd ch09/k8s-ai
+uv run k8s-ai-server --auth-key test-key
 ```
 
-### 4. k8s-ai A2A Server Setup
-
-Start the k8s-ai server in a separate terminal:
-```bash
-cd /Users/gigi/git/k8s-ai
-uv run k8s-ai-server --context kind-k8s-ai
-```
-
-The server will be available at `http://localhost:9999`.
+The A2A server listens on `http://localhost:9999` and the Admin API (session management) on
+`http://localhost:9998`. The key must match `K8S_AI_API_KEY` in `makdo/.env`.
 
 ### 5. Run MAKDO
 
 ```bash
-# Start MAKDO system
+cd ch09/makdo
 uv run makdo
 ```
+
+MAKDO creates a k8s-ai session for `MAKDO_CLUSTER_CONTEXT`, then runs a health check cycle every
+`MAKDO_CHECK_INTERVAL` seconds (default 60): Analyzer -> Fixer -> Slack Bot. Watch the log for the agents' tool
+calls (`🔧 [MAKDO_Analyzer] Calling tool: ...`). Press `Ctrl+C` to stop.
+
+With a local model each cycle can take several minutes; set `MAKDO_CHECK_INTERVAL=600` to space them out.
+
+## Slack (optional)
+
+1. Create a Slack app (https://api.slack.com/apps -> **Create New App** -> **From scratch**).
+2. **OAuth & Permissions** -> add the bot scopes `chat:write` and `channels:read`, then **Install to Workspace**.
+3. Copy the **Bot User OAuth Token** (`xoxb-...`) into `AI6_BOT_TOKEN` in `.env`.
+4. Create the `#makdo-devops` channel and invite the bot (`/invite @<your app>`).
+
+Without a token, MAKDO still runs; the Slack Bot agent reports that Slack is not configured.
 
 ## Configuration Files
 
 ### `.env`
-Contains environment variables:
-- `OPENAI_API_KEY` - Your OpenAI API key
-- `AI6_BOT_TOKEN` - Slack bot token (if using Slack)
-- `K8S_AI_BASE_URL` - k8s-ai server URL
-- Other Slack and system configuration
+
+- `OPENAI_API_KEY`, `MAKDO_MODEL` (and `OPENAI_BASE_URL` for Ollama) - the LLM used by all four agents
+- `K8S_AI_BASE_URL`, `K8S_AI_ADMIN_URL`, `K8S_AI_API_KEY` - how to reach the k8s-ai server
+- `MAKDO_CLUSTER_CONTEXT` - kube context of the monitored cluster (default `kind-makdo-test`)
+- `MAKDO_CHECK_INTERVAL` - seconds between health checks
+- `AI6_BOT_TOKEN` - Slack bot token (optional)
+
+### `src/makdo/agents/coordinator.yaml`
+
+The AI-6 configuration of all four agents: system prompts, sub-agents, A2A servers and MCP tools.
+It uses `${MAKDO_MODEL}`, `${K8S_AI_BASE_URL}`, `${K8S_AI_API_KEY}` and `${AI6_PACKAGE_DIR}` (set by MAKDO to the
+installed `ai_six` package, whose built-in tools the coordinator uses).
 
 ### `config/makdo.yaml`
-System configuration:
-- Kubernetes cluster definitions
-- Agent configurations and system prompts
-- Operational parameters and safety constraints
-- Slack channel and notification settings
 
-## Usage
+System configuration: k8s-ai server URLs, Slack channel, monitoring interval and logging.
 
-Once running, MAKDO will:
+## Directory Structure
 
-1. **Monitor Clusters** - Continuously check cluster health every 5 minutes
-2. **Analyze Issues** - Use k8s-ai to identify and prioritize problems
-3. **Coordinate Fixes** - Dispatch safe remediation actions
-4. **Notify Users** - Send alerts and status updates via Slack
-5. **Require Approval** - Request human approval for critical operations
-
-## System Components
-
-### Built-in Tools
-- **AI-6 kubectl tool** - For cluster operations
-- **Slack MCP server** - For Slack communication
-- **k8s-ai A2A integration** - For cluster analysis
-
-### Directory Structure
 ```
 makdo/
-├── README.md              # This file
-├── pyproject.toml         # Dependencies and build config
-├── .env                   # Environment variables
+├── README.md
+├── pyproject.toml / uv.lock   # Dependencies (ai-six from PyPI)
+├── .env.example               # Environment template (copy to .env)
 ├── config/
-│   ├── makdo.yaml         # System configuration
-│   └── makdo.example.yaml # Configuration template
-├── bin/
-│   └── slack-mcp-server   # Slack MCP server binary
+│   ├── makdo.yaml             # System configuration
+│   └── makdo.example.yaml     # Configuration reference
 ├── src/makdo/
-│   ├── main.py           # Main orchestrator
-│   ├── agents/           # Agent configurations
-│   ├── tools/            # Custom tools
-│   └── mcp_tools/        # MCP tool configurations
-└── data/
-    └── memory/           # Agent session data
+│   ├── main.py                # Main orchestrator (health check loop)
+│   ├── agents/                # Agent configurations (coordinator.yaml is the one in use)
+│   ├── tools/                 # Native AI-6 Slack tools (alternative to the MCP server)
+│   └── mcp_tools/slack.py     # Slack MCP server used by the Slack Bot agent
+├── tests/
+│   ├── fixtures/              # broken_workloads.yaml (demo failures) + test namespace setup
+│   └── e2e/                   # End-to-end tests (see below)
+└── data/memory/               # Agent session data (created at runtime)
 ```
+
+## End-to-end tests
+
+`run_e2e_test.sh` (which runs `tests/e2e/test_makdo_e2e.py`) and the other scripts in `tests/e2e/` are the author's end-to-end tests; `test_slack_*.py` check the Slack integration (they need `AI6_BOT_TOKEN`).
+They create the kind clusters `k8s-ai` and `makdo-test` if needed, start the k8s-ai server from `../k8s-ai`,
+inject failures and check MAKDO's reports. Some of them post to a real Slack workspace or capture screenshots of the
+Slack desktop app (macOS) for the book's figures.
 
 ## Troubleshooting
 
-### Common Issues
+1. **`Failed to create session: 401`**
+   - `K8S_AI_API_KEY` doesn't match the server's `--auth-key`.
 
-1. **Missing OpenAI API Key**
-   - Set `OPENAI_API_KEY` in `.env` file
+2. **`Error creating k8s-ai session: ... Connection refused`**
+   - Start the k8s-ai server first: `cd ../k8s-ai && uv run k8s-ai-server --auth-key test-key`
 
-2. **k8s-ai Server Not Running**
-   - Start with: `uv run k8s-ai-server --context kind-k8s-ai`
+3. **`Getting kubeconfig for context ... failed`**
+   - Check `kubectl config get-contexts` and set `MAKDO_CLUSTER_CONTEXT`.
 
-3. **Kubernetes Clusters Not Found**
-   - Check: `kubectl config get-contexts`
-   - Create with: `kind create cluster --name <cluster-name>`
-
-4. **Permission Issues**
-   - Ensure `bin/slack-mcp-server` is executable: `chmod +x bin/slack-mcp-server`
+4. **The model doesn't use its tools / makes up results**
+   - Use a model with good tool-calling support. Small local models may need several cycles to get it right.
 
 ### Logs and Debugging
 
-MAKDO logs are written to console and optionally to `logs/makdo.log`.
-Set `logging.level: "DEBUG"` in `config/makdo.yaml` for verbose output.
+MAKDO logs to the console. Set `MAKDO_DEBUG=1` (or `logging.level: "DEBUG"` in `config/makdo.yaml`) for verbose output.
 
 ## Development
 
 To modify agent behavior:
-1. Edit agent configurations in `src/makdo/agents/`
+1. Edit the agent definitions in `src/makdo/agents/coordinator.yaml`
 2. Modify system prompts and tool selections
 3. Update operational parameters in `config/makdo.yaml`
 4. Restart MAKDO to apply changes

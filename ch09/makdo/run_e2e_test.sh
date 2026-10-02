@@ -125,8 +125,9 @@ start_services() {
         log "k8s-ai server already running"
     else
         log "Starting k8s-ai server..."
-        if [[ -d "/Users/gigi/git/k8s-ai" ]]; then
-            cd /Users/gigi/git/k8s-ai
+        K8S_AI_DIR="$SCRIPT_DIR/../k8s-ai"
+        if [[ -d "$K8S_AI_DIR" ]]; then
+            cd "$K8S_AI_DIR"
 
             # Ensure k8s-ai venv exists and activate it
             if [[ ! -d ".venv" ]]; then
@@ -136,7 +137,7 @@ start_services() {
 
             # Use the venv's python directly
             log "Launching k8s-ai-server with its own venv..."
-            nohup .venv/bin/python -m k8s_ai.server.main --context kind-k8s-ai --port 9999 > /tmp/k8s-ai-server.log 2>&1 &
+            nohup .venv/bin/python -m k8s_ai.server.main --port 9999 --auth-key "${K8S_AI_API_KEY:-test-key}" > /tmp/k8s-ai-server.log 2>&1 &
             K8S_AI_PID=$!
             cd "$SCRIPT_DIR"
 

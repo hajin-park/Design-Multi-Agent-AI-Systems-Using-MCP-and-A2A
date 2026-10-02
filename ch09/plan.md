@@ -66,7 +66,7 @@ https://medium.com/@piyushagni5/building-your-first-a2a-system-a-complete-guide-
 - k8s-ai A2A server with multi-cluster registration via session tokens
 
 ### Slack Integration
-- **Credentials**: Available in `/Users/gigi/git/ai-six/py/frontend/slack/.env`
+- **Credentials**: `AI6_BOT_TOKEN` in `makdo/.env` (see `makdo/.env.example`)
 - **MCP Server**: Using korotovsky/slack-mcp-server for comprehensive Slack functionality
 - **Channel**: Dedicated DevOps channel in bot-playground namespace
 

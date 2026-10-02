@@ -1,10 +1,10 @@
 # MAKDO Coordinator Configuration for AI-6
 name: "MAKDO Coordinator"
 description: "Main orchestrator and task dispatcher for multi-cluster Kubernetes operations"
-default_model_id: "gpt-4o"
+default_model_id: "${MAKDO_MODEL}"
 # Coordinator delegates to sub-agents only - no direct tool access
-tools_dirs: ["/Users/gigi/git/ai-six/py/ai_six/tools/memory"]
-mcp_tools_dirs: ["/Users/gigi/git/ai-six/py/ai_six/mcp_tools"]
+tools_dirs: ["${AI6_PACKAGE_DIR}/tools/memory"]  # AI6_PACKAGE_DIR is set by MAKDO to the installed ai_six package
+mcp_tools_dirs: ["${AI6_PACKAGE_DIR}/mcp_tools"]
 memory_dir: "data/memory"
 
 # Provider configuration
@@ -60,13 +60,13 @@ system_prompt: |
 agents:
   - name: "MAKDO_Analyzer"
     description: "Cluster health assessment and problem identification agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     enable_memory: false  # Disable session persistence to prevent stale session data
     a2a_servers:
       - name: "kind-makdo-test"
-        url: "http://localhost:9999"
+        url: "${K8S_AI_BASE_URL}"
         timeout: 30.0
-        api_key: "test-key"
+        api_key: "${K8S_AI_API_KEY}"
     system_prompt: |
       You are the MAKDO Analyzer, specializing in Kubernetes cluster health assessment and problem identification.
 
@@ -157,13 +157,13 @@ agents:
 
   - name: "MAKDO_Fixer"
     description: "Safe cluster modification and remediation agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     enable_memory: false  # Disable session persistence to prevent stale session data
     a2a_servers:
       - name: "kind-makdo-test"
-        url: "http://localhost:9999"
+        url: "${K8S_AI_BASE_URL}"
         timeout: 30.0
-        api_key: "test-key"
+        api_key: "${K8S_AI_API_KEY}"
     system_prompt: |
       You are the MAKDO Fixer, responsible for safe cluster modifications and automated remediation.
 
@@ -264,7 +264,7 @@ agents:
 
   - name: "MAKDO_Slack_Bot"
     description: "User communication and notification interface agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     tools_dirs: []
     mcp_tools_dirs: ["src/makdo/mcp_tools"]
     system_prompt: |

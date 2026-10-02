@@ -14,7 +14,7 @@ clusters:
 # k8s-ai A2A Server Configuration
 k8s_ai:
   base_url: "http://localhost:9999"
-  admin_api_url: "http://localhost:9999/admin"
+  admin_api_url: "http://localhost:9998"   # k8s-ai Admin API (session management)
 
 # Slack Configuration
 slack:

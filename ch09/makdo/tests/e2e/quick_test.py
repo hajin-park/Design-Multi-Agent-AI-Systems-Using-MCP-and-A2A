@@ -160,12 +160,13 @@ class QuickMAKDOTest:
             if not server_running:
                 logger.info("k8s-ai server not running, attempting to start...")
                 # Try to start server (non-blocking)
-                if os.path.exists("/Users/gigi/git/k8s-ai"):
+                k8s_ai_dir = Path(__file__).resolve().parents[3] / "k8s-ai"  # ch09/k8s-ai
+                if k8s_ai_dir.exists():
                     subprocess.Popen([
                         "uv", "run", "k8s-ai-server",
-                        "--context", "kind-k8s-ai",
-                        "--port", "9999"
-                    ], cwd="/Users/gigi/git/k8s-ai")
+                        "--port", "9999",
+                        "--auth-key", os.environ.get("K8S_AI_API_KEY", "test-key")
+                    ], cwd=str(k8s_ai_dir))
 
                     # Wait a bit and check again
                     time.sleep(5)

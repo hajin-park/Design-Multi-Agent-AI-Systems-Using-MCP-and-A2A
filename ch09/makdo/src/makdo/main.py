@@ -10,9 +10,27 @@ import yaml
 from pathlib import Path
 from typing import Dict, Any
 
+import ai_six
 from ai_six.agent.agent import Agent
 from ai_six.agent.config import Config
+from ai_six.llm_providers import model_info
 from dotenv import load_dotenv
+
+
+def set_default_environment(config: Dict[str, Any]):
+    """Provide defaults for the ${VARS} used in the agent config files (see .env.example)."""
+    # Tool directories that ship with the installed ai-six package
+    os.environ.setdefault("AI6_PACKAGE_DIR", os.path.dirname(ai_six.__file__))
+    os.environ.setdefault("MAKDO_MODEL", "gpt-4o")
+    k8s_ai = config.get("k8s_ai", {})
+    os.environ.setdefault("K8S_AI_BASE_URL", k8s_ai.get("base_url", "http://localhost:9999"))
+    os.environ.setdefault("K8S_AI_ADMIN_URL", k8s_ai.get("admin_api_url", "http://localhost:9998"))
+    os.environ.setdefault("K8S_AI_API_KEY", "test-key")
+    os.environ.setdefault("MAKDO_CLUSTER_CONTEXT", "kind-makdo-test")
+
+    # ai-six only knows the context window of a few models; assume a conservative one for others (e.g. Ollama)
+    model = os.environ["MAKDO_MODEL"]
+    model_info.model_info.setdefault(model, {"context_window_size": 32000, "provider": "openai", "description": model})
 
 
 def load_config(config_path: str = "config/makdo.yaml") -> Dict[str, Any]:
@@ -42,7 +60,7 @@ def create_coordinator_config() -> Config:
     return Config.from_file("src/makdo/agents/coordinator.yaml")
 
 
-def create_k8s_ai_session(cluster_context: str, api_url: str = "http://localhost:9998") -> str:
+def create_k8s_ai_session(cluster_context: str, api_url: str, api_key: str) -> str:
     """Create a k8s-ai session and return the session token."""
     import subprocess
     import requests
@@ -61,7 +79,7 @@ def create_k8s_ai_session(cluster_context: str, api_url: str = "http://localhost
         logger.info(f"Creating k8s-ai session for {cluster_context}...")
         response = requests.post(
             f"{api_url}/sessions",
-            headers={"Authorization": "Bearer test-key"},
+            headers={"Authorization": f"Bearer {api_key}"},
             json={
                 "cluster_name": cluster_context,
                 "kubeconfig": kubeconfig,
@@ -143,9 +161,11 @@ def start_coordinator(coordinator: Agent, config: Dict[str, Any]):
 
     logger = logging.getLogger("makdo")
 
-    # Create k8s-ai session for the test cluster
-    cluster_context = "kind-makdo-test"
-    session_token = create_k8s_ai_session(cluster_context)
+    # Create k8s-ai session for the monitored cluster
+    cluster_context = os.environ["MAKDO_CLUSTER_CONTEXT"]
+    session_token = create_k8s_ai_session(cluster_context,
+                                          api_url=os.environ["K8S_AI_ADMIN_URL"],
+                                          api_key=os.environ["K8S_AI_API_KEY"])
     if not session_token:
         logger.error("Failed to create k8s-ai session - health checks may fail")
         return 1
@@ -296,8 +316,9 @@ def main():
         print("Please copy config/makdo.example.yaml to config/makdo.yaml and configure")
         return 1
 
-    # Setup logging
+    # Setup logging and the environment used by the agent configs
     setup_logging(config)
+    set_default_environment(config)
 
     logger = logging.getLogger("makdo")
     logger.info("Starting MAKDO - Multi-Agent Kubernetes DevOps System")

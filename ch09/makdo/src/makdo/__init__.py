@@ -10,8 +10,7 @@ __author__ = "Gigi Sayfan"
 from .main import main
 
 def cli_main():
-    """CLI entry point that handles async properly."""
-    import asyncio
-    return asyncio.run(main())
+    """CLI entry point (used by `uv run makdo`)."""
+    return main()
 
 __all__ = ["main", "cli_main"]

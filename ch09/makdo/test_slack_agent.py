@@ -17,6 +17,9 @@ logger = logging.getLogger("slack-test")
 def test_slack_agent():
     """Test the Slack Bot agent independently"""
     load_dotenv()
+    # Same environment defaults as `uv run makdo` (model registration, MAKDO_MODEL, ...)
+    from makdo.main import set_default_environment, load_config
+    set_default_environment(load_config())
 
     logger.info("Creating Slack Bot agent...")
 
@@ -25,8 +28,9 @@ def test_slack_agent():
     config_dict = {
         "name": "MAKDO_Slack_Bot_Test",
         "description": "Test Slack Bot agent",
-        "default_model_id": "gpt-4o",
+        "default_model_id": os.getenv("MAKDO_MODEL", "gpt-4o"),
         "tools_dirs": [],
+        "memory_dir": "data/memory/slack-test",
         "mcp_tools_dirs": ["src/makdo/mcp_tools"],
         "system_prompt": "You are a Slack bot. Post messages to #makdo-devops channel.",
         "provider_config": {

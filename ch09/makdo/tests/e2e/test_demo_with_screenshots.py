@@ -53,7 +53,7 @@ logger = logging.getLogger("MAKDO-Demo-Screenshots")
 class K8sAIServerManager:
     """Manages k8s-ai server lifecycle for the demo"""
 
-    def __init__(self, k8s_ai_path: str = "/Users/gigi/git/k8s-ai",
+    def __init__(self, k8s_ai_path: str = str(Path(__file__).resolve().parents[3] / "k8s-ai"),
                  host: str = "localhost", port: int = 9999):
         self.k8s_ai_path = Path(k8s_ai_path)
         self.host = host
