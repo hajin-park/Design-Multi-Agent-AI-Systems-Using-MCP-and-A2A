@@ -594,6 +594,8 @@ class Engine:
                         try:
                             kwargs = json.loads(tool_call.arguments)
                             tool_result = tool.run(**kwargs)
+                            if on_tool_call_func is not None:
+                                on_tool_call_func(tool_call.name, kwargs, str(tool_result))
                         except Exception as e:
                             tool_result = e
 

@@ -1,19 +1,22 @@
 # AI-6 Chainlit Configuration File
+# Copy to config.yaml. Relative paths are resolved from the py/ directory.
+# To use a local Ollama model instead of OpenAI, set default_model_id to the
+# same value as provider_config.ollama.model (e.g. "llama3.1:8b").
 default_model_id: "gpt-4o"
-tools_dir: "${HOME}/git/ai-six/py/backend/tools"
-mcp_tools_dir: "${HOME}/git/ai-six/py/backend/mcp_tools"
-memory_dir: "${HOME}/git/ai-six/memory/chainlit"
+tools_dir: "backend/tools"
+mcp_tools_dir: "backend/mcp_tools"
+memory_dir: "memory/chainlit"
 checkpoint_interval: 3
 
-# Provider configuration
+# Provider configuration (a provider is skipped if its settings are missing/invalid)
 provider_config:
   openai:
     api_key: ${OPENAI_API_KEY}
     default_model: "gpt-4o"
   ollama:
-    model: "qwen2.5-coder:32b"
+    model: "llama3.1:8b"
 
 # Tool configuration
 tool_config:
   claude:
-    api_key: ${ANTHROPIC_API_KEY}
+    api_key: ${ANTHROPIC_API_KEY}   # optional: enables the claude tool

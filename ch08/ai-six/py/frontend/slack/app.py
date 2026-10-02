@@ -97,7 +97,7 @@ def handle_tool_call(client, channel, name, args, result):
         client.chat_postMessage(
             channel=channel,
             thread_ts=latest_ts,
-            text=f"_Tool call: `{name}` {', '.join(args.values()) if args else ''}_\n{result}"
+            text=f"_Tool call: `{name}` {', '.join(str(v) for v in args.values()) if args else ''}_\n{result}"
         )
     except SlackApiError as e:
         print(f"Error posting tool call result: {e}")

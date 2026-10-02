@@ -24,7 +24,7 @@ def handle_chunk(chunk):
 def handle_tool_call(name, args, result):
     if not show_tool_calls:
         return
-    print(f"\n🤖 [AI-6 tool call]: {name} {', '.join(args.values()) if args else ''}")
+    print(f"\n🤖 [AI-6 tool call]: {name} {', '.join(str(v) for v in args.values()) if args else ''}")
     print(result)
     print('\n----------')
 

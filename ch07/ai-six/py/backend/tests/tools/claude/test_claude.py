@@ -39,7 +39,7 @@ class ClaudeToolTest(unittest.TestCase):
         
         # Mock the API response
         mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="This is Claude's response")]
+        mock_response.content = [MagicMock(type="thinking"), MagicMock(type="text", text="This is Claude's response")]
         mock_client.messages.create.return_value = mock_response
         
         # Test the run method
@@ -47,9 +47,8 @@ class ClaudeToolTest(unittest.TestCase):
         
         # Verify the API was called correctly
         mock_client.messages.create.assert_called_once_with(
-            model='claude-sonnet-4-20250514',
-            max_tokens=1000,
-            temperature=0.7,
+            model='claude-sonnet-5-5',
+            max_tokens=16000,
             messages=[{"role": "user", "content": "test prompt"}]
         )
         
@@ -62,20 +61,20 @@ class ClaudeToolTest(unittest.TestCase):
         
         # Mock the API response
         mock_response = MagicMock()
-        mock_response.content = [MagicMock(text="Custom response")]
+        mock_response.content = [MagicMock(type="text", text="Custom response")]
         mock_client.messages.create.return_value = mock_response
         
         # Test with custom parameters
         result = self.claude_tool.run(
             prompt="custom prompt",
-            model="claude-3-5-haiku-20241022",
+            model="claude-haiku-4-5",
             max_tokens=500,
             temperature=0.3
         )
         
         # Verify the API was called with custom parameters
         mock_client.messages.create.assert_called_once_with(
-            model='claude-3-5-haiku-20241022',
+            model='claude-haiku-4-5',
             max_tokens=500,
             temperature=0.3,
             messages=[{"role": "user", "content": "custom prompt"}]
