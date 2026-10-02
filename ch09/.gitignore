@@ -1,5 +1,6 @@
 **/.idea
-**/__pycache
+**/__pycache__/
+**/.venv/
 **/.env
 **/*.log
 **/bin
@@ -7,4 +8,5 @@
 **/.claude
 **/demo_screenshots/
 **/results.json
-
+**/*_results.json
+**/keys.json
