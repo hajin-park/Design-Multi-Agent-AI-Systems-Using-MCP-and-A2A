@@ -17,5 +17,6 @@
     "claude": {
       "api_key": "${ANTHROPIC_API_KEY}"
     }
-  }
+  },
+  "remote_mcp_servers": []
 }

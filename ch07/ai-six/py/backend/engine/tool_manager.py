@@ -81,13 +81,20 @@ def _discover_native_tools(tools_dir: str, tool_config: dict) -> list[Tool]:
                             and obj != Tool
                             and obj.__module__ == module_name
                     ):
+                        # Skip base classes that require constructor arguments
+                        if obj.__name__ in ['MCPTool', 'CommandTool']:
+                            continue
+
                         # Check if tool is enabled in config
                         tool_name = obj.__name__
                         if tool_name in tool_config and not tool_config[tool_name].get('enabled', True):
                             continue
 
-                        # Instantiate the tool
+                        # Instantiate the tool and apply its configuration (keyed by tool name)
                         tool_instance = obj()
+                        conf = tool_config.get(tool_instance.name, {})
+                        if conf:
+                            tool_instance.configure(conf)
                         tools.append(tool_instance)
 
         except Exception as e:

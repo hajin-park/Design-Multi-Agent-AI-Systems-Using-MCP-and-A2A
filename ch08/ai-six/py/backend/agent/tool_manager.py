@@ -191,8 +191,11 @@ def _discover_native_tools(tools_dir: str, tool_config: Mapping[str, dict]) -> l
                             continue
 
                         try:
-                            # Instantiate the tool
+                            # Instantiate the tool and apply its configuration (keyed by tool name)
                             tool_instance = obj()
+                            conf = tool_config.get(tool_instance.name, {})
+                            if conf:
+                                tool_instance.configure(conf)
                             tools.append(tool_instance)
                         except TypeError as e:
                             # Skip tools that can't be instantiated without arguments

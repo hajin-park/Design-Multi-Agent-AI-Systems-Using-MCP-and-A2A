@@ -20,3 +20,9 @@ provider_config:
 tool_config:
   claude:
     api_key: ${ANTHROPIC_API_KEY}   # optional: enables the claude tool
+
+# Remote MCP servers (SSE transport). Example:
+# remote_mcp_servers:
+#   - name: "my-remote-server"
+#     url: "http://localhost:8080/sse"
+remote_mcp_servers: []

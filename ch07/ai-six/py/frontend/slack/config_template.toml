@@ -8,6 +8,10 @@ mcp_tools_dir = "backend/mcp_tools"
 memory_dir = "memory/slack"
 checkpoint_interval = 3
 
+# Remote MCP servers (SSE transport). Example:
+# remote_mcp_servers = [{ name = "my-remote-server", url = "http://localhost:8080/sse" }]
+remote_mcp_servers = []
+
 # Provider configuration (a provider is skipped if its settings are missing/invalid)
 [provider_config.openai]
 api_key = "${OPENAI_API_KEY}"
