@@ -16,7 +16,7 @@ We will use a shared virtual environment for all Python components.
 ## Create virtual environment and activate it
 
 ```shell
-python -m venv venv --prompt ai6
+python3 -m venv venv --prompt ai6
 source venv/bin/activate
 ```
 
@@ -25,4 +25,19 @@ source venv/bin/activate
 ```
 pip install -r requirements.txt
 ```
-# Reference
+
+## Configure
+
+```shell
+cp .env.example .env    # add OPENAI_API_KEY if you use OpenAI models
+cp frontend/cli/config_template.json frontend/cli/config.json
+```
+
+Edit `frontend/cli/config.json` and set `default_model_id` (and `provider_config.ollama.model` for Ollama).
+Config paths are relative to this `py` directory.
+
+## Run the tests
+
+```shell
+python -m unittest discover -s backend/tests
+```

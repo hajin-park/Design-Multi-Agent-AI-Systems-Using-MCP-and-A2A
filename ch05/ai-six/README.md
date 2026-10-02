@@ -3,7 +3,7 @@ Agentic AI focused on ubiquitous tool using.
 
 ![](ai-6.png)
 
-The current implementation is in Python. check out the [py](py/README.MD) directory.
+The current implementation is in Python. check out the [py](py/README.md) directory.
 
 There may be implementations in other languages too, in the near future.
 
@@ -11,15 +11,19 @@ See this [link](https://deepwiki.com/Sayfan-AI/ai-six) for a super-deep dive int
 
 # LLM Access
 
-Obviously, it delegates all the heavy lifting to an LLM provider. At the moment it is OpenAI.
+It delegates all the heavy lifting to an LLM provider. Two providers are supported:
 
-It expects an environment variable `OPENAI_API_KEY` to be set.
+- **OpenAI** - expects the environment variable `OPENAI_API_KEY` to be set (e.g. in `py/.env`).
+- **Ollama** - runs local models (e.g. `llama3.1:8b`) on `http://localhost:11434` (override with `OLLAMA_HOST`).
+
+The model is selected with `default_model_id` in the frontend's config file.
 
 # Usage
 
-After you activate the virtualenv and install the dependencies,
+First create the virtual environment, install the dependencies and create your config file
+(see [py/README.md](py/README.md) and [../README.md](../README.md) for the full walk-through).
 
-you can run an AI-6 frontend using the startup script (`ai6.sh`).
+Then you can run an AI-6 frontend using the startup script (`ai6.sh`), which runs everything from the `py` directory.
 
 **Example — Run the CLI frontend:**
 

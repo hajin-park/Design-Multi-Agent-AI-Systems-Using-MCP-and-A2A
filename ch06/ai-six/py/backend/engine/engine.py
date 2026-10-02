@@ -66,6 +66,11 @@ class Engine:
             for llm_provider in self.llm_providers
             for model_id in llm_provider.models
         }
+        if self.default_model_id not in self.model_provider_map:
+            raise ValueError(
+                f"default_model_id '{self.default_model_id}' is not served by any configured provider. "
+                f"Available models: {sorted(self.model_provider_map)}"
+            )
 
         # Discover available tools
         tool_list = Engine.discover_tools(config.tools_dir, config.tool_config)

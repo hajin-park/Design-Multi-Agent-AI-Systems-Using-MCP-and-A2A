@@ -1,6 +1,7 @@
 import os
 from functools import partial
 
+import certifi
 import pathology.path
 from slack_bolt import App
 from slack_bolt.adapter.socket_mode import SocketModeHandler
@@ -12,16 +13,23 @@ from . import utils
 
 script_dir = pathology.path.Path.script_dir()
 
+# slack_sdk uses urllib, which can't find CA certificates on some Python installs (e.g. python.org on macOS)
+os.environ.setdefault("SSL_CERT_FILE", certifi.where())
+
 # Try to load environment variables from .env file in the same directory as this script
 env_file_path = os.path.join(script_dir, ".env")
 if os.path.exists(env_file_path):
     load_dotenv(env_file_path)
     print(f"Loaded environment variables from {env_file_path}")
 else:
-    print(f"Warning: No .env file found at {env_file_path}")
+    # Fall back to the nearest .env file in a parent directory (e.g. py/.env)
+    load_dotenv()
 
 app_token = os.environ.get("AI6_APP_TOKEN")
 bot_token = os.environ.get("AI6_BOT_TOKEN")
+if not app_token or not bot_token:
+    raise SystemExit("AI6_APP_TOKEN and AI6_BOT_TOKEN must be set (in py/.env or frontend/slack/.env). "
+                     "See frontend/slack/README.md")
 
 # Initializes your AI-6 app with your bot token and socket mode handler
 app = App(token=bot_token)

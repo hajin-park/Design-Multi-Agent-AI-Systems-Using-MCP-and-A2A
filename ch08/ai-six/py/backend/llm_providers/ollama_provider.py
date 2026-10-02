@@ -110,4 +110,8 @@ class OllamaProvider(LLMProvider):
 
     def models(self) -> list[str]:
         """Get the list of available models."""
-        return [m.model for m in ollama.list().models]
+        try:
+            return [m.model for m in ollama.list().models]
+        except Exception:
+            # Ollama server unreachable: fall back to the configured model
+            return [self.model]

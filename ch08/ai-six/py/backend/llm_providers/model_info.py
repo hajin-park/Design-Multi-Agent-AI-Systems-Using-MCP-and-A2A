@@ -28,6 +28,13 @@ model_info = {
         "description": "GPT-4o with 128K context (16k max output tokens)"
     },
     
+    # Llama models
+    "llama3.1:8b": {
+        "context_window_size": 128000,
+        "provider": "ollama",
+        "description": "Llama 3.1 8B"
+    },
+
     # Qwen models
     "qwen2.5-coder:32b": {
         "context_window_size": 128000,
@@ -68,10 +75,14 @@ model_info = {
 }
 
 
+# Context window assumed for models not listed above (e.g. any other Ollama model)
+DEFAULT_CONTEXT_WINDOW_SIZE = 32000
+
+
 def get_context_window_size(model_id: str) -> int:
     if model_id in model_info:
         return model_info[model_id]["context_window_size"]
-    raise KeyError(f"Model '{model_id}' not found in model_info dictionary")
+    return DEFAULT_CONTEXT_WINDOW_SIZE
 
 
 def get_model_metadata(model_id: str) -> dict:

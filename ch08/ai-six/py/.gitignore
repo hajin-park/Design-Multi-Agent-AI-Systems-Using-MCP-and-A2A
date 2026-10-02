@@ -54,6 +54,7 @@ shelf/
 # Environment files
 **/.env
 **/.env.*
+!**/.env.example
 
 # Chainlit
 **/.chailit

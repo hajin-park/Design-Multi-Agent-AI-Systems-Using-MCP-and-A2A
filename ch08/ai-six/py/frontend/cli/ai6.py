@@ -60,6 +60,7 @@ def main():
             env_file_path=env_file_path
         )
     except ValueError as e:
+        print(f"Error: {e}")
         return
 
     # Handle --list argument
@@ -99,6 +100,7 @@ def main():
 
     finally:
         # Save the session when we're done
+        agent.session.save()
         print(f"Session saved with ID: {agent.get_session_id()}")
 
 if __name__ == '__main__':

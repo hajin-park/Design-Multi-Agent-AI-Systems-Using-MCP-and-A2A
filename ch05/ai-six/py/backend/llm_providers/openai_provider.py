@@ -242,5 +242,9 @@ class OpenAIProvider(LLMProvider):
 
     @property
     def models(self) -> list[str]:
-        return [m.id for m in self.client.models.list().data]
+        try:
+            return [m.id for m in self.client.models.list().data]
+        except Exception:
+            # Listing models failed (e.g. invalid API key or no network): fall back to the default model
+            return [self.default_model]
 
