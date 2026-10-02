@@ -1,0 +1,28 @@
+# Slack app manifest for the AI-6 Slack frontend.
+# Use it at https://api.slack.com/apps -> Create New App -> From a manifest
+display_information:
+  name: AI-6
+  description: Agentic AI focused on ubiquitous tool use
+features:
+  bot_user:
+    display_name: AI-6
+    always_online: true
+oauth_config:
+  scopes:
+    bot:
+      - app_mentions:read
+      - channels:history
+      - channels:join
+      - channels:read
+      - chat:write
+settings:
+  event_subscriptions:
+    bot_events:
+      - app_mention
+      - channel_created
+      - message.channels
+  interactivity:
+    is_enabled: false
+  org_deploy_enabled: false
+  socket_mode_enabled: true
+  token_rotation_enabled: false

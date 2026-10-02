@@ -1,12 +1,15 @@
-openai
-sh
-slack_bolt
-python-dotenv
-mcp[cli]
-pathology
-chainlit
-ollama
-pyyaml
-toml
-debugpy
-anthropic
+# Versions tested with this chapter's code (newer majors have breaking API changes,
+# e.g. mcp 2.x renamed FastMCP)
+openai>=1.99,<4
+sh>=2.2,<3
+slack_bolt>=1.23,<2
+python-dotenv>=1.1,<2
+mcp[cli]>=1.13,<2
+pathology==0.2
+chainlit>=2.6,<3
+requests>=2.32,<3  # needed by chainlit's tracing dependency (traceloop-sdk) but not declared by it
+ollama>=0.5,<0.7
+pyyaml>=6.0,<7
+toml>=0.10,<0.11
+debugpy>=1.8,<2
+anthropic>=0.60,<2
