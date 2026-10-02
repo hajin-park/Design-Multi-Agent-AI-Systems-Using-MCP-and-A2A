@@ -168,6 +168,9 @@ def main():
     parser.add_argument('--host', default='0.0.0.0', help='Host to bind to (default: 0.0.0.0)')
     parser.add_argument('--port', type=int, default=9999, help='Port to bind to (default: 9999)')
     parser.add_argument('--admin-port', type=int, default=9998, help='Admin API port (default: 9998)')
+    parser.add_argument('--public-url', default=os.environ.get('K8S_AI_PUBLIC_URL'),
+                        help='URL clients use to reach the A2A server, advertised in the agent card '
+                             '(default: http://<host>:<port>/, env: K8S_AI_PUBLIC_URL)')
 
     # Authentication arguments
     parser.add_argument('--auth-key', help='Single API key for authentication')
@@ -262,7 +265,7 @@ def main():
     agent_card = AgentCard(
         name='k8s-ai Diagnostic Agent',
         description=f'Kubernetes AI diagnostic agent with read-only cluster analysis{context_description}',
-        url=f'http://{args.host}:{args.port}/',
+        url=args.public_url or f'http://{args.host}:{args.port}/',
         version='2.0.0',
         default_input_modes=['text/plain'],
         default_output_modes=['text/plain'],
