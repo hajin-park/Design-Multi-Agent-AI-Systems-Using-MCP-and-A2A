@@ -96,27 +96,66 @@ Before getting started, you should have:
 
 ### Supported Operating Systems
 The examples in this book can be run on:
-- Windows  
-- macOS  
+- Windows (use [WSL 2](https://learn.microsoft.com/windows/wsl/install) - the launch scripts are bash scripts)
+- macOS
 - Linux
 
 ### Required Software
 
-| Software          | Version / Requirement | Supported OS            |
-|-------------------|------------------------|--------------------------|
-| Python            | Python 3.x             | Windows, macOS, Linux   |
-| OpenAI API Key    | Required for examples  | Windows, macOS, Linux   |
+| Software | Version / Requirement | Needed for |
+|---|---|---|
+| Python | 3.12 or newer (tested with 3.13) | All chapters |
+| An LLM | An OpenAI API key, **or** [Ollama](https://ollama.com) with a tool-calling model (e.g. `llama3.1:8b`) | All chapters |
+| [uv](https://docs.astral.sh/uv/getting-started/installation/) | Latest | Chapters 8, 9 |
+| Docker, [kind](https://kind.sigs.k8s.io/), kubectl | Docker Desktop recommended | Chapters 3, 8, 9, 11 |
+| Slack workspace + app | Optional | Chapters 6, 9, 11 (Slack parts) |
 
-You will need access to a Python development environment.  
-An OpenAI API key is required for many of the examples in the book.
+Every example works with either OpenAI or a local Ollama model; each chapter README shows both configurations.
 
 ### Recommended Hardware
-- A machine with at least **8 GB of RAM** is recommended for running more complex examples.
+- A machine with at least **8 GB of RAM** is recommended for running more complex examples
+  (16 GB or more if you run local models with Ollama alongside the kind clusters).
 
 ### Additional Notes
 If you are using the digital version of this book, we recommend typing the code manually or accessing it directly from the book’s GitHub repository (link provided in the next section).  
 This helps avoid errors that may occur from copying and pasting code.
   </details>
+
+<details open>
+  <summary><h2>Using this repository</h2></summary>
+
+Every chapter directory is **self-contained**: it has all the code, configuration templates and instructions it needs,
+so you can open the book at any chapter and follow along without the previous chapters' work. Start with the
+chapter's `README.md`.
+
+| Chapter | Directory | What's inside |
+|---|---|---|
+| 1, 2 | - | No code in this repository |
+| 3: A Hands-on Walk-Through of a Simple AI Agent | [ch03](ch03) | `k8s-ai`: a ~70-line agent that runs kubectl for you |
+| 4: Building a Tool-Based Agentic AI Framework | [ch04](ch04) | AI-6 framework v0.8.0: engine, LLM providers, tools, CLI |
+| 5: Implementing Custom Tools | [ch05](ch05) | AI-6 v0.9.0: custom tools (`claude`, `github`, ...) |
+| 6: Creating Chat Interfaces Using Slack and Chainlit | [ch06](ch06) | AI-6 v0.10.0: Chainlit web UI and Slack bot |
+| 7: Integrating with the Model Context Protocol Ecosystem | [ch07](ch07) | AI-6 v0.11.0: local and remote MCP servers |
+| 8: Designing Multi-Agent Systems | [ch08](ch08) | AI-6 v0.13.0 (sub-agents, A2A client) + k8s-ai A2A server |
+| 9: Implementing Multi-Agent Systems with A2A | [ch09](ch09) | MAKDO multi-agent DevOps team + k8s-ai A2A server |
+| 10: Testing, Debugging, and Troubleshooting Multi-Agent Systems | - | No separate directory in this repository |
+| 11: Deploying Multi-Agent Systems | [ch11](ch11) | MAKDO and k8s-ai deployed to two kind clusters |
+| 12: Advanced Topics and Future Directions | - | No code in this repository |
+
+### Choosing the LLM
+
+- **OpenAI**: set `OPENAI_API_KEY` (the examples use `gpt-4o`, which you can change in the config files).
+- **Ollama**: install Ollama, `ollama pull llama3.1:8b` (or another
+  [model with tool support](https://ollama.com/search?c=tools)), and select it in the chapter's config file as
+  described in the chapter README. Chapters 3, 9 and 11 use Ollama through its OpenAI-compatible endpoint
+  (`OPENAI_BASE_URL=http://localhost:11434/v1`).
+
+### Dependency versions
+
+The code was written against the 1.x line of the MCP Python SDK and the 0.3.x line of the A2A SDK. Both have since
+released new major versions with breaking API changes (e.g. `mcp` 2.x renamed `FastMCP`), so the requirement files
+pin each dependency to the newest compatible range that was tested with the chapter's code.
+
 
 
 
