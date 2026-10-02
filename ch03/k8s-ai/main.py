@@ -4,8 +4,9 @@ import os
 import sh
 from openai import OpenAI
 
+# Set OPENAI_BASE_URL to use any OpenAI-compatible server, e.g. Ollama (http://localhost:11434/v1)
 client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
-model_name = "gpt-4o"
+model_name = os.environ.get('K8S_AI_MODEL', 'gpt-4o')
 tools = [{
     "type": "function",
     "function": {
@@ -42,10 +43,16 @@ def send(messages: list[dict[str, any]]) -> str:
         for t in r.tool_calls:
             if t.function.name == 'kubectl':
                 cmd = json.loads(t.function.arguments)['cmd'].split()
-                result = sh.kubectl(cmd)
+                if cmd and cmd[0] == 'kubectl':  # some models include the command name
+                    cmd = cmd[1:]
+                try:
+                    result = sh.kubectl(cmd)
+                except sh.ErrorReturnCode as e:
+                    # Let the LLM see the error instead of crashing
+                    result = e.stderr.decode() or e.stdout.decode()
                 messages.append(dict(tool_call_id=t.id, role="tool", name=t.function.name, content=result))
         return send(messages)
-    return r.content.strip()
+    return (r.content or '').strip()
 
 
 def main():

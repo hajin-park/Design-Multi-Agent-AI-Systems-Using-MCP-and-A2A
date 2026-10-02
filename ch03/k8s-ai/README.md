@@ -5,12 +5,20 @@ Cloned with permission of [the-gigi](https://github.com/the-gigi) from https://g
 
 OpenAI chatbot with kubectl access. You run it and you interact with your Kubernetes clusters in natural language.
 
+# Prerequisites
+
+- Python 3.10 or newer
+- [kubectl](https://kubernetes.io/docs/tasks/tools/) and a Kubernetes cluster to talk to. The walk-through below uses a
+  local [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) cluster (requires Docker).
+- An LLM that supports tool calling: either an OpenAI API key, or a local model served by
+  [Ollama](https://ollama.com) (e.g. `ollama pull llama3.1:8b`).
+
 # Setup
 
 ## Create virtual environment and activate it
 
 ```shell
-python -m venv venv
+python3 -m venv venv
 source venv/bin/activate
 ```
 
@@ -20,13 +28,34 @@ source venv/bin/activate
 pip install -r requirements.txt
 ```
 
+## Configure the LLM
+
+**OpenAI** (uses `gpt-4o` by default):
+
+```shell
+export OPENAI_API_KEY=sk-your-openai-api-key
+```
+
+**Ollama** (or any other OpenAI-compatible server):
+
+```shell
+export OPENAI_API_KEY=ollama                         # any non-empty value works for Ollama
+export OPENAI_BASE_URL=http://localhost:11434/v1     # Ollama's OpenAI-compatible endpoint
+export K8S_AI_MODEL=llama3.1:8b                      # a tool-capable model you have pulled
+```
+
+`K8S_AI_MODEL` can also be used to pick a different OpenAI model.
+
 # Usage
 
-Just run the thing and make sure your kube context points to the right cluster:
+Just run the thing and make sure your kube context points to the right cluster
+(`kubectl config current-context`):
 
 ```shell
 python main.py
 ```
+
+Type `exit` to quit.
 
 # k8s-ai in Action
 

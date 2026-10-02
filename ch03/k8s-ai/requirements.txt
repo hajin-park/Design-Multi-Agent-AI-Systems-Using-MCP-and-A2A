@@ -1,2 +1,2 @@
-openai
-sh
+openai>=1.99,<4
+sh>=2.2,<3
