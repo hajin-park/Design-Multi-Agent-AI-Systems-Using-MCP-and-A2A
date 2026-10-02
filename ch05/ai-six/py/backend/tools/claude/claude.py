@@ -17,21 +17,20 @@ class Claude(Tool):
                 Parameter(
                     name='model',
                     type='string',
-                    description="""See https://docs.anthropic.com/en/docs/about-claude/models/overview. 
-                                   Default is claude-sonnet-4-20250514
+                    description="""See https://platform.claude.com/docs/en/about-claude/models/overview.
+                                   Default is claude-sonnet-5-5
                     """),
                 Parameter(
                     name='max_tokens',
                     type='integer',
-                    description='Maximum number of tokens to generate. Defaults to 1000'),
+                    description='Maximum number of tokens to generate. Defaults to 16000'),
                 Parameter(
                     name='temperature',
                     type='number',
-                    description='Temperature for sampling (0.0-1.0). Defaults to 0.7')
+                    description='Temperature for sampling (0.0-1.0). Only for older models; newer models reject it')
             ],
             required={'prompt'}
         )
-        self.api_key = None
         self.client = None
     
     def configure(self, config: dict) -> None:
@@ -44,17 +43,21 @@ class Claude(Tool):
             return "Error: Claude API key not configured. Set 'api_key' in tool_config for claude tool"
         
         prompt = kwargs['prompt']
-        model = kwargs.get('model', 'claude-sonnet-4-20250514')
-        max_tokens = kwargs.get('max_tokens', 1000)
-        temperature = kwargs.get('temperature', 0.7)
+        model = kwargs.get('model', 'claude-sonnet-5-5')
+        max_tokens = kwargs.get('max_tokens', 16000)
+        # Newer Claude models reject non-default sampling parameters, so only send temperature if requested
+        extra = {'temperature': kwargs['temperature']} if 'temperature' in kwargs else {}
 
-        response = self.client.messages.create(
-            model=model,
-            max_tokens=max_tokens,
-            temperature=temperature,
-            messages=[
-                {"role": "user", "content": prompt}
-            ]
-        )
-            
-        return response.content[0].text
+        try:
+            response = self.client.messages.create(
+                model=model,
+                max_tokens=max_tokens,
+                **extra,
+                messages=[
+                    {"role": "user", "content": prompt}
+                ]
+            )
+            # The response may start with a thinking block, so return the first text block
+            return next((b.text for b in response.content if b.type == 'text'), '')
+        except Exception as e:
+            return f"Error calling Claude API: {str(e)}"
