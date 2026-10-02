@@ -13,9 +13,9 @@ ch09/
 
 ## Quick start
 
-Prerequisites: Python 3.12+, [uv](https://docs.astral.sh/uv/getting-started/installation/), Docker,
-[kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation), `kubectl`, and either an OpenAI API key or a
-tool-capable [Ollama](https://ollama.com) model.
+Prerequisites: [uv](https://docs.astral.sh/uv/getting-started/installation/) (it installs a matching Python if you
+don't have one), Docker, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation), `kubectl`, and either
+an OpenAI API key or a tool-capable [Ollama](https://ollama.com) model.
 
 ```bash
 # 1. A cluster to monitor, with some broken workloads

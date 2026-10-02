@@ -32,8 +32,9 @@ MAKDO reaches k8s-ai through the worker cluster's host port mappings (`host.dock
 
 ## Prerequisites
 
-- Docker Desktop (provides `host.docker.internal` to containers; see the Linux note below),
-  [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) and `kubectl`
+- Docker, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) and `kubectl`. The walk-through
+  assumes Docker Desktop, which gives containers the `host.docker.internal` address; with Docker Engine on Linux,
+  apply the changes in [Linux with Docker Engine](#linux-with-docker-engine) before step 3.
 - An LLM: an OpenAI API key, or [Ollama](https://ollama.com) running on your machine with a tool-capable model
 - A Slack bot token (optional)
 
@@ -121,20 +122,26 @@ The model must be pulled on the Ollama server that answers on port 11434 of your
 (`curl http://localhost:11434/api/tags`). Larger models follow MAKDO's multi-step instructions much more reliably;
 with small models some health-check cycles may end without the Analyzer calling k8s-ai.
 
-## Linux note
+## Linux with Docker Engine
 
-`host.docker.internal` is provided by Docker Desktop. With plain Docker Engine, use the worker node's name on the
-kind network instead of the host port mappings: in `makdo/deployment.yaml` set
-`base_url: "http://makdo-worker-control-plane:30100"` and `admin_api_url: "http://makdo-worker-control-plane:30099"`,
-and in `k8s-ai/deployment.yaml` set `K8S_AI_PUBLIC_URL` to `http://makdo-worker-control-plane:30100/`.
-For Ollama, make it listen on all interfaces (`OLLAMA_HOST=0.0.0.0 ollama serve`) and use your host's IP on the
-kind network as `OPENAI_BASE_URL`.
+`host.docker.internal` only exists with Docker Desktop (macOS, Windows/WSL 2, Docker Desktop for Linux). With plain
+Docker Engine, address the worker node by its name on the `kind` Docker network instead of the host port mappings:
+
+| File | Setting | Value |
+|---|---|---|
+| `makdo/deployment.yaml` | `base_url` | `http://makdo-worker-control-plane:30100` |
+| `makdo/deployment.yaml` | `admin_api_url` | `http://makdo-worker-control-plane:30099` |
+| `k8s-ai/deployment.yaml` | `K8S_AI_PUBLIC_URL` | `http://makdo-worker-control-plane:30100/` |
+
+For Ollama, make it listen on all interfaces (`OLLAMA_HOST=0.0.0.0 ollama serve`) and set `OPENAI_BASE_URL` in `.env`
+to the gateway address of the `kind` network, for example `http://172.18.0.1:11434/v1`
+(`docker network inspect kind` shows the gateway).
 
 ## Troubleshooting
 
 | Symptom | Fix |
 |---|---|
-| `kind create cluster` fails with `port is already allocated` | Another cluster uses ports 8080/9090/8100/8099/8200; delete it or run `./check-prerequisites.sh` to see which. |
+| `kind create cluster` fails with `port is already allocated` | Something else uses host port 8080, 9090, 8100, 8099 or 8200, often an old cluster (`kind get clusters`). Stop or delete it. |
 | Pods in `ErrImageNeverPull` | The image wasn't loaded into that cluster: `kind load docker-image ... --name ...` |
 | MAKDO pod `CreateContainerConfigError` | `makdo-secrets` or `makdo-kubeconfig` is missing: run `./create-secrets.sh` |
 | `Failed to create session: 401` | `K8S_AI_API_KEY` differs between the two secrets: fix `.env`, re-run `./create-secrets.sh`, restart both deployments |

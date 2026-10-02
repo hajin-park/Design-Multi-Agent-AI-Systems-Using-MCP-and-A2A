@@ -40,7 +40,7 @@ system uses the combined `coordinator.yaml`.
 
 ## Prerequisites
 
-1. **Python 3.12+** and [uv](https://docs.astral.sh/uv/getting-started/installation/)
+1. [uv](https://docs.astral.sh/uv/getting-started/installation/) (it installs a matching Python if you don't have one)
 2. **Docker**, [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) and `kubectl`
 3. **An LLM** - an OpenAI API key, or a tool-capable model served by [Ollama](https://ollama.com)
    (e.g. `ollama pull llama3.1:8b`)
@@ -156,10 +156,11 @@ makdo/
 
 ## End-to-end tests
 
-`run_e2e_test.sh` (which runs `tests/e2e/test_makdo_e2e.py`) and the other scripts in `tests/e2e/` are the author's end-to-end tests; `test_slack_*.py` check the Slack integration (they need `AI6_BOT_TOKEN`).
-They create the kind clusters `k8s-ai` and `makdo-test` if needed, start the k8s-ai server from `../k8s-ai`,
-inject failures and check MAKDO's reports. Some of them post to a real Slack workspace or capture screenshots of the
-Slack desktop app (macOS) for the book's figures.
+`run_e2e_test.sh` (which runs `tests/e2e/test_makdo_e2e.py`) and the other scripts in `tests/e2e/` are the author's
+end-to-end tests. They create the kind clusters `k8s-ai` and `makdo-test` if needed, start the k8s-ai server from
+`../k8s-ai`, inject failures and check MAKDO's reports. `test_slack_*.py` check the Slack integration and need
+`AI6_BOT_TOKEN`. Some tests post to a real Slack workspace, and the screenshot tests capture the Slack desktop app
+on macOS (they produced the book's figures).
 
 ## Troubleshooting
 

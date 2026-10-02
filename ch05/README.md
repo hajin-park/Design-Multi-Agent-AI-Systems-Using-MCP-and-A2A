@@ -28,7 +28,7 @@ ch05/ai-six/
 
 ## Prerequisites
 
-- Python 3.12 or newer (tested with 3.13)
+- Python 3.12 or 3.13 (Chainlit, one of the dependencies, does not run on Python 3.14 yet)
 - An LLM, either:
   - **Ollama** running locally with a model that supports tool calling, for example
     `ollama pull llama3.1:8b` (other tool-capable models such as `qwen3`, `gpt-oss` or `gemma4` work too), or
@@ -41,7 +41,7 @@ ch05/ai-six/
 
 ```shell
 cd ch05/ai-six/py
-python3 -m venv venv
+python3 -m venv venv              # use python3.13 if your python3 is 3.14 or newer
 source venv/bin/activate
 pip install -r requirements.txt
 
@@ -55,7 +55,8 @@ cp frontend/cli/config_template.json frontend/cli/config.json  # then edit confi
 `provider_config` configures one provider; a provider whose settings are missing or invalid is skipped.
 
 - **OpenAI**: put your key in `py/.env` (`OPENAI_API_KEY=sk-...`) and keep `"default_model_id": "gpt-4o"`.
-- **Ollama**: set both `default_model_id` and `provider_config.ollama.model` to the model you pulled:
+- **Ollama**: set both `default_model_id` and `provider_config.ollama.model` to the model you pulled, written exactly
+  as `ollama list` shows it (including the tag):
 
   ```json
   "default_model_id": "llama3.1:8b",
@@ -71,8 +72,8 @@ which is where `ai6.sh` runs everything from.
 ### Configuring tools
 
 Tools that need settings get them from `tool_config` in the same config file. The `claude` tool reads its key
-from `ANTHROPIC_API_KEY` (set it in `py/.env`); without a key the tool is still listed, but reports an
-authentication error when the agent calls it. It uses `claude-sonnet-5-5` unless the agent asks for another model.
+from `ANTHROPIC_API_KEY` (set it in `py/.env`); without a key the tool is still listed, but answers that the key
+is not configured when the agent calls it. It uses `claude-sonnet-5-5` unless the agent asks for another model.
 
 ## Running the CLI
 
@@ -120,4 +121,5 @@ python -m unittest discover -s backend/tests
 | `Error: default_model_id '...' is not served by any configured provider` | The model in `default_model_id` must be served by a configured provider: set `OPENAI_API_KEY` for OpenAI models, or pull the model with Ollama (`ollama list` shows what is available). |
 | `model '...' not found (status code: 404)` | `ollama pull <model>`, or point `OLLAMA_HOST` at the Ollama server that has it. |
 | The agent answers without using tools | Use a model that supports tool calling (see [Ollama tool models](https://ollama.com/search?c=tools)). |
+| `Configuration file not found: ...` | Copy the template to the name the frontend expects, e.g. `cp frontend/cli/config_template.json frontend/cli/config.json` (see Setup). |
 | `virtualenv not found` | Create the virtual environment in `py/venv` as shown above. |

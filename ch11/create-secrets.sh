@@ -19,6 +19,8 @@ if [[ ! -f .env ]]; then
     exit 1
 fi
 
+# Optional values come from .env only, not from variables exported earlier in this shell
+unset OPENAI_BASE_URL MAKDO_MODEL AI6_BOT_TOKEN
 set -a
 source .env
 set +a

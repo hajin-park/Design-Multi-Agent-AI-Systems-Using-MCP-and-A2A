@@ -35,7 +35,7 @@ class Claude(Tool):
     
     def configure(self, config: dict) -> None:
         """Configure the Claude tool with API key."""
-        if 'api_key' in config:
+        if config.get('api_key'):
             self.client = anthropic.Anthropic(api_key=config['api_key'])
     
     def run(self, **kwargs) -> str:

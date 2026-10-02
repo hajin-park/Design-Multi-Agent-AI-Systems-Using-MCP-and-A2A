@@ -59,7 +59,7 @@ def main():
             session_id=args.session,
             env_file_path=env_file_path
         )
-    except ValueError as e:
+    except (ValueError, FileNotFoundError) as e:
         print(f"Error: {e}")
         return
 

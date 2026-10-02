@@ -37,7 +37,7 @@ ch07/ai-six/
 
 ## Prerequisites
 
-- Python 3.12 or newer (tested with 3.13)
+- Python 3.12 or 3.13 (Chainlit, one of the dependencies, does not run on Python 3.14 yet)
 - An LLM, either:
   - **Ollama** running locally with a model that supports tool calling, for example
     `ollama pull llama3.1:8b` (other tool-capable models such as `qwen3`, `gpt-oss` or `gemma4` work too), or
@@ -51,7 +51,7 @@ ch07/ai-six/
 
 ```shell
 cd ch07/ai-six/py
-python3 -m venv venv
+python3 -m venv venv              # use python3.13 if your python3 is 3.14 or newer
 source venv/bin/activate
 pip install -r requirements.txt
 
@@ -68,7 +68,8 @@ are supported by the same `Config` class). Each one selects the model through `d
 `provider_config` configures one provider; a provider whose settings are missing or invalid is skipped.
 
 - **OpenAI**: put your key in `py/.env` (`OPENAI_API_KEY=sk-...`) and keep `"default_model_id": "gpt-4o"`.
-- **Ollama**: set both `default_model_id` and `provider_config.ollama.model` to the model you pulled:
+- **Ollama**: set both `default_model_id` and `provider_config.ollama.model` to the model you pulled, written exactly
+  as `ollama list` shows it (including the tag):
 
   ```json
   "default_model_id": "llama3.1:8b",
@@ -84,8 +85,8 @@ which is where `ai6.sh` runs everything from.
 ### Configuring tools
 
 Tools that need settings get them from `tool_config` in the same config file. The `claude` tool reads its key
-from `ANTHROPIC_API_KEY` (set it in `py/.env`); without a key the tool is still listed, but reports an
-authentication error when the agent calls it. It uses `claude-sonnet-5-5` unless the agent asks for another model.
+from `ANTHROPIC_API_KEY` (set it in `py/.env`); without a key the tool is still listed, but answers that the key
+is not configured when the agent calls it. It uses `claude-sonnet-5-5` unless the agent asks for another model.
 
 ## Using MCP tools
 
@@ -200,4 +201,5 @@ python -m unittest discover -s backend/tests
 | Chainlit fails with `No module named 'requests'` | `pip install -r requirements.txt` again (it pins `requests`, which a Chainlit dependency forgets to declare). |
 | Slack: `AI6_APP_TOKEN and AI6_BOT_TOKEN must be set` | Put both tokens in `py/.env` (see the Slack README). |
 | Slack: `invalid_auth` | The bot token is wrong, or the app was not installed to the workspace. |
+| `Configuration file not found: ...` | Copy the template to the name the frontend expects, e.g. `cp frontend/cli/config_template.json frontend/cli/config.json` (see Setup). |
 | `virtualenv not found` | Create the virtual environment in `py/venv` as shown above. |

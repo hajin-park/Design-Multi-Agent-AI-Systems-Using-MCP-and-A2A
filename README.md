@@ -96,18 +96,19 @@ Before getting started, you should have:
 
 ### Supported Operating Systems
 The examples in this book can be run on:
-- Windows (use [WSL 2](https://learn.microsoft.com/windows/wsl/install) - the launch scripts are bash scripts)
 - macOS
 - Linux
+- Windows, inside [WSL 2](https://learn.microsoft.com/windows/wsl/install) (the code relies on bash scripts and
+  Unix-only Python libraries, so it does not run in PowerShell or cmd)
 
 ### Required Software
 
 | Software | Version / Requirement | Needed for |
 |---|---|---|
-| Python | 3.12 or newer (tested with 3.13) | All chapters |
+| Python | 3.12 or 3.13 | All chapters |
 | An LLM | An OpenAI API key, **or** [Ollama](https://ollama.com) with a tool-calling model (e.g. `llama3.1:8b`) | All chapters |
 | [uv](https://docs.astral.sh/uv/getting-started/installation/) | Latest | Chapters 8, 9 |
-| Docker, [kind](https://kind.sigs.k8s.io/), kubectl | Docker Desktop recommended | Chapters 3, 8, 9, 11 |
+| Docker, [kind](https://kind.sigs.k8s.io/), kubectl | Docker Desktop, or Docker Engine on Linux | Chapters 3, 8, 9, 11 |
 | Slack workspace + app | Optional | Chapters 6, 9, 11 (Slack parts) |
 
 Every example works with either OpenAI or a local Ollama model; each chapter README shows both configurations.
@@ -155,6 +156,22 @@ chapter's `README.md`.
 The code was written against the 1.x line of the MCP Python SDK and the 0.3.x line of the A2A SDK. Both have since
 released new major versions with breaking API changes (e.g. `mcp` 2.x renamed `FastMCP`), so the requirement files
 pin each dependency to the newest compatible range that was tested with the chapter's code.
+
+### Platform notes
+
+The commands in the chapter READMEs are for a bash-compatible shell and are the same on macOS, Linux and WSL 2.
+
+- **Windows**: do everything inside WSL 2. Clone the repository there, and install Python, Ollama and the other
+  tools there. For the Kubernetes chapters, turn on WSL integration in Docker Desktop's settings.
+- **Debian/Ubuntu (including WSL 2)**: `python3 -m venv` needs the `python3-venv` package
+  (`sudo apt install python3-venv`).
+- **Python 3.14 or newer**: Chainlit, a dependency of Chapters 4-8, does not run on it yet. Create those chapters'
+  virtual environments with Python 3.13 instead (`python3.13 -m venv venv`). Chapters 8, 9 and 11 use `uv` or
+  Docker for the other components, which pick a suitable Python on their own.
+- **Linux with Docker Engine** (no Docker Desktop): Chapter 11 needs a few changed addresses, listed in
+  [ch11/README.md](ch11/README.md#linux-with-docker-engine).
+
+</details>
 
 
 

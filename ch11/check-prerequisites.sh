@@ -84,33 +84,34 @@ fi
 # Check that the host ports used by the kind clusters are free
 echo ""
 echo -n "Checking host ports 8080 9090 8100 8099 8200... "
-BUSY_PORTS=""
-for port in 8080 9090 8100 8099 8200; do
-    if lsof -nP -iTCP:$port -sTCP:LISTEN &> /dev/null; then
-        BUSY_PORTS="$BUSY_PORTS $port"
-    fi
-done
-if [ -n "$BUSY_PORTS" ]; then
-    echo -e "${RED}✗${NC} in use:$BUSY_PORTS"
-    echo "  → control-cluster.yaml / worker-cluster.yaml map these ports; free them (e.g. delete old makdo clusters)"
-    ALL_GOOD=false
+if echo "$EXISTING_CLUSTERS" | grep -qE '^makdo-(control|worker)$'; then
+    echo -e "${YELLOW}⚠${NC}  skipped (the makdo clusters already exist and use these ports)"
 else
-    echo -e "${GREEN}✓${NC} free"
+    BUSY_PORTS=""
+    for port in 8080 9090 8100 8099 8200; do
+        # A successful TCP connection means something is already listening on the port
+        if (exec 3<>"/dev/tcp/127.0.0.1/$port") 2> /dev/null; then
+            BUSY_PORTS="$BUSY_PORTS $port"
+        fi
+    done
+    if [ -n "$BUSY_PORTS" ]; then
+        echo -e "${RED}✗${NC} in use:$BUSY_PORTS"
+        echo "  → control-cluster.yaml / worker-cluster.yaml map these ports; stop whatever is using them"
+        ALL_GOOD=false
+    else
+        echo -e "${GREEN}✓${NC} free"
+    fi
 fi
 
 # Check available disk space
 echo ""
 echo -n "Checking disk space... "
-if command -v df &> /dev/null; then
-    AVAILABLE_GB=$(df -h . | awk 'NR==2 {print $4}' | sed 's/Gi\?//g')
-    AVAILABLE_NUM=$(echo $AVAILABLE_GB | sed 's/[^0-9.]//g')
-
-    if (( $(echo "$AVAILABLE_NUM < 10" | bc -l) )); then
-        echo -e "${YELLOW}⚠${NC}  Low disk space: ${AVAILABLE_GB}"
-        echo "  → KinD clusters need ~5-10GB. Consider freeing up space."
-    else
-        echo -e "${GREEN}✓${NC} ${AVAILABLE_GB} available"
-    fi
+AVAILABLE_GB=$(df -Pk . | awk 'NR==2 {print int($4 / 1024 / 1024)}')
+if [ "$AVAILABLE_GB" -lt 10 ]; then
+    echo -e "${YELLOW}⚠${NC}  Low disk space: ${AVAILABLE_GB} GB"
+    echo "  → KinD clusters need ~5-10GB. Consider freeing up space."
+else
+    echo -e "${GREEN}✓${NC} ${AVAILABLE_GB} GB available"
 fi
 
 # Check Docker memory allocation

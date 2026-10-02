@@ -71,7 +71,7 @@ class A2AComprehensiveE2ETest:
         """Check if a service is running."""
         try:
             response = requests.get(url, timeout=5)
-        except requests.exceptions.ConnectionError:
+        except requests.exceptions.RequestException:
             return False
         if expected_response and expected_response not in response.text:
             return False
@@ -83,6 +83,8 @@ class A2AComprehensiveE2ETest:
 
         # Check if ollama is already running
         ollama_host = os.environ.get("OLLAMA_HOST", "http://localhost:11434")
+        if "://" not in ollama_host:  # OLLAMA_HOST is often set without a scheme, e.g. 127.0.0.1:11434
+            ollama_host = f"http://{ollama_host}"
         if self.check_service("Ollama", f"{ollama_host}/api/tags"):
             print("✅ Ollama already running")
             return True
@@ -517,8 +519,8 @@ class A2AComprehensiveE2ETest:
             except:
                 pass
 
-        # Stop k8s-ai server
-        if self.server_process:
+        # Stop k8s-ai server (if we started it and it is still running)
+        if self.server_process and self.server_process.poll() is None:
             print("   Stopping k8s-ai server...")
             os.killpg(self.server_process.pid, signal.SIGTERM)
             try:
