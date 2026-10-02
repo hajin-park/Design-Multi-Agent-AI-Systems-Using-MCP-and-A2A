@@ -1,7 +1,7 @@
 # MAKDO Coordinator Configuration for AI-6
 name: "MAKDO Coordinator"
 description: "Main orchestrator and task dispatcher for multi-cluster Kubernetes operations"
-default_model_id: "gpt-4o"
+default_model_id: "${MAKDO_MODEL}"
 # Coordinator delegates to sub-agents only - no direct tool access
 # Note: Must have at least one path to pass validation, even if empty dir
 tools_dirs: ["/tmp/makdo/tools"]
@@ -61,7 +61,7 @@ system_prompt: |
 agents:
   - name: "MAKDO_Analyzer"
     description: "Cluster health assessment and problem identification agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     enable_memory: false  # Disable session persistence to prevent stale session data
     tools_dirs: ["/tmp/makdo/tools"]
     mcp_tools_dirs: ["/tmp/makdo/mcp_tools"]
@@ -71,9 +71,9 @@ agents:
         api_key: ${OPENAI_API_KEY}
     a2a_servers:
       - name: "kind-makdo-worker"
-        url: "http://host.docker.internal:8100"
+        url: "${K8S_AI_BASE_URL}"
         timeout: 30.0
-        api_key: "test-key"
+        api_key: "${K8S_AI_API_KEY}"
     system_prompt: |
       You are the MAKDO Analyzer, specializing in Kubernetes cluster health assessment and problem identification.
 
@@ -164,7 +164,7 @@ agents:
 
   - name: "MAKDO_Fixer"
     description: "Safe cluster modification and remediation agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     enable_memory: false  # Disable session persistence to prevent stale session data
     tools_dirs: ["/tmp/makdo/tools"]
     mcp_tools_dirs: ["/tmp/makdo/mcp_tools"]
@@ -174,9 +174,9 @@ agents:
         api_key: ${OPENAI_API_KEY}
     a2a_servers:
       - name: "kind-makdo-worker"
-        url: "http://host.docker.internal:8100"
+        url: "${K8S_AI_BASE_URL}"
         timeout: 30.0
-        api_key: "test-key"
+        api_key: "${K8S_AI_API_KEY}"
     system_prompt: |
       You are the MAKDO Fixer, responsible for safe cluster modifications and automated remediation.
 
@@ -277,7 +277,7 @@ agents:
 
   - name: "MAKDO_Slack_Bot"
     description: "User communication and notification interface agent"
-    default_model_id: "gpt-4o"
+    default_model_id: "${MAKDO_MODEL}"
     tools_dirs: []
     mcp_tools_dirs: ["src/makdo/mcp_tools"]
     memory_dir: "/tmp/makdo/memory"

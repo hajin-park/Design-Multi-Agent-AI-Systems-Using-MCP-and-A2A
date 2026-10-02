@@ -17,8 +17,8 @@ data:
 
     # k8s-ai A2A Server Configuration
     k8s_ai:
-      base_url: "http://host.docker.internal:8100"
-      admin_api_url: "http://host.docker.internal:8100/admin"
+      base_url: "http://host.docker.internal:8100"        # k8s-ai A2A server (NodePort 30100 -> host port 8100)
+      admin_api_url: "http://host.docker.internal:8099"   # k8s-ai Admin API (NodePort 30099 -> host port 8099)
 
     # Slack Configuration
     slack:
@@ -57,27 +57,36 @@ spec:
       - name: makdo
         image: makdo:latest
         imagePullPolicy: Never
+        # Values come from the makdo-secrets secret (see the chapter README for how to create it)
         env:
         - name: OPENAI_API_KEY
           valueFrom:
             secretKeyRef:
               name: makdo-secrets
               key: openai-api-key
-        - name: AI6_BOT_TOKEN
+        - name: K8S_AI_API_KEY          # must match the key in the k8s-ai-secrets secret (worker cluster)
+          valueFrom:
+            secretKeyRef:
+              name: makdo-secrets
+              key: k8s-ai-api-key
+        - name: MAKDO_MODEL             # optional, default gpt-4o
+          valueFrom:
+            secretKeyRef:
+              name: makdo-secrets
+              key: makdo-model
+              optional: true
+        - name: OPENAI_BASE_URL         # optional, e.g. http://host.docker.internal:11434/v1 for Ollama
+          valueFrom:
+            secretKeyRef:
+              name: makdo-secrets
+              key: openai-base-url
+              optional: true
+        - name: AI6_BOT_TOKEN           # optional, enables posting to Slack
           valueFrom:
             secretKeyRef:
               name: makdo-secrets
               key: slack-bot-token
-        - name: AI6_APP_TOKEN
-          valueFrom:
-            secretKeyRef:
-              name: makdo-secrets
-              key: slack-app-token
-        - name: SLACK_TEAM_ID
-          valueFrom:
-            secretKeyRef:
-              name: makdo-secrets
-              key: slack-team-id
+              optional: true
         - name: MAKDO_CHECK_INTERVAL
           value: "120"
         volumeMounts:

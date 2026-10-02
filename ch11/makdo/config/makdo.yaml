@@ -10,8 +10,8 @@ clusters:
 
 # k8s-ai A2A Server Configuration
 k8s_ai:
-  base_url: "http://host.docker.internal:8100"
-  admin_api_url: "http://host.docker.internal:8100/admin"
+  base_url: "http://host.docker.internal:8100"        # k8s-ai A2A server (NodePort 30100 -> host port 8100)
+  admin_api_url: "http://host.docker.internal:8099"   # k8s-ai Admin API (NodePort 30099 -> host port 8099)
 
 # Slack Configuration
 slack:

@@ -29,8 +29,7 @@ if not bot_token:
                     bot_token = line.split('=', 1)[1].strip()
                     break
 
-if not bot_token:
-    raise ValueError("AI6_BOT_TOKEN not found in environment or .env file")
+NOT_CONFIGURED = "❌ Slack is not configured: set AI6_BOT_TOKEN in the environment or makdo/.env"
 
 
 @mcp.tool()
@@ -44,6 +43,8 @@ def slack_post_message(channel: str, text: str) -> str:
     Returns:
         Success or error message
     """
+    if not bot_token:
+        return NOT_CONFIGURED
     # Normalize channel name
     if not channel.startswith('#'):
         channel = f'#{channel}'
@@ -79,6 +80,8 @@ def slack_list_channels() -> str:
     Returns:
         List of channels
     """
+    if not bot_token:
+        return NOT_CONFIGURED
     url = 'https://slack.com/api/conversations.list'
     headers = {
         'Authorization': f'Bearer {bot_token}'

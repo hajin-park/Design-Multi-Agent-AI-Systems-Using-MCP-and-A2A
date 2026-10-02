@@ -1,0 +1,8 @@
+ai-six==0.14.6
+pyyaml>=6.0,<7
+python-dotenv>=1.1,<2
+requests>=2.32,<3
+# ai-six does not bound these; their next major versions have breaking API changes
+a2a-sdk[http-server]>=0.3.6,<0.4
+mcp[cli]>=1.13,<2
+openai>=1.99,<4
