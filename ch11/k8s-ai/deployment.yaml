@@ -32,24 +32,6 @@ subjects:
   name: k8s-ai
   namespace: default
 ---
-apiVersion: v1
-kind: Secret
-metadata:
-  name: k8s-ai-api-keys
-  namespace: default
-type: Opaque
-stringData:
-  keys.json: |
-    {
-      "api_keys": [
-        {
-          "key": "${K8S_AI_API_KEY}",
-          "name": "MAKDO Client",
-          "created": "2025-01-01T00:00:00"
-        }
-      ]
-    }
----
 apiVersion: apps/v1
 kind: Deployment
 metadata:
@@ -80,16 +62,17 @@ spec:
           name: admin
           protocol: TCP
         env:
-        - name: OPENAI_API_KEY
+        # API key(s) clients (MAKDO) must present. Create the secret first:
+        #   kubectl create secret generic k8s-ai-secrets --from-literal=api-key=<your-key>
+        - name: K8S_AI_AUTH_KEYS
           valueFrom:
             secretKeyRef:
               name: k8s-ai-secrets
-              key: openai-api-key
-        volumeMounts:
-        - name: keys
-          mountPath: /app/keys.json
-          subPath: keys.json
-          readOnly: true
+              key: api-key
+        # The A2A agent card tells clients where to send requests. MAKDO (in the control cluster)
+        # reaches this server through the worker cluster's host port mapping (see worker-cluster.yaml).
+        - name: K8S_AI_PUBLIC_URL
+          value: "http://host.docker.internal:8100/"
         resources:
           requests:
             memory: "256Mi"
@@ -99,20 +82,16 @@ spec:
             cpu: "500m"
         livenessProbe:
           httpGet:
-            path: /.well-known/agent.json
+            path: /.well-known/agent-card.json
             port: 9999
           initialDelaySeconds: 10
           periodSeconds: 30
         readinessProbe:
           httpGet:
-            path: /.well-known/agent.json
+            path: /.well-known/agent-card.json
             port: 9999
           initialDelaySeconds: 5
           periodSeconds: 10
-      volumes:
-      - name: keys
-        secret:
-          secretName: k8s-ai-api-keys
 ---
 apiVersion: v1
 kind: Service
