@@ -14,8 +14,9 @@ class KubectlExecutor:
     def __init__(self, context: str = None):
         """Initialize kubectl executor with optional context."""
         self.context = context
+        # Set OPENAI_BASE_URL to use any OpenAI-compatible server, e.g. Ollama (http://localhost:11434/v1)
         self.client = OpenAI(api_key=os.environ['OPENAI_API_KEY'])
-        self.model_name = "gpt-4o"
+        self.model_name = os.environ.get('K8S_AI_MODEL', 'gpt-4o')
         self.tools = [{
             "type": "function",
             "function": {
@@ -87,4 +88,4 @@ class KubectlExecutor:
             
             return self.send_message(messages)
         
-        return r.content.strip()
+        return (r.content or '').strip()

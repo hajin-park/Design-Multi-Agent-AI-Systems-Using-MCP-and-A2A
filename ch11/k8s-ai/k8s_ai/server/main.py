@@ -11,6 +11,7 @@ from datetime import datetime
 
 import uvicorn
 from starlette.requests import Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from starlette.applications import Starlette
 from starlette.routing import Route, Mount
@@ -287,7 +288,7 @@ def main():
 
     # Add authentication middleware to A2A app if we have keys
     if use_auth:
-        a2a_starlette_app.middleware("http")(create_auth_middleware(api_key_manager))
+        a2a_starlette_app.add_middleware(BaseHTTPMiddleware, dispatch=create_auth_middleware(api_key_manager))
 
     # Create admin API with api_key_manager for authentication
     admin_app = create_admin_app(api_key_manager)

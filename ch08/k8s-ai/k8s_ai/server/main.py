@@ -9,6 +9,7 @@ from datetime import datetime
 
 import uvicorn
 from starlette.requests import Request
+from starlette.middleware.base import BaseHTTPMiddleware
 from starlette.responses import JSONResponse
 from a2a.server.apps import A2AStarletteApplication
 from a2a.server.request_handlers import DefaultRequestHandler
@@ -284,7 +285,7 @@ def main():
     
     # Add authentication middleware if we have keys
     if use_auth:
-        app.middleware("http")(create_auth_middleware(api_key_manager))
+        app.add_middleware(BaseHTTPMiddleware, dispatch=create_auth_middleware(api_key_manager))
     
     print(f"Starting k8s-ai A2A server on {args.host}:{args.port}")
     print(f"Using Kubernetes context: {args.context}")

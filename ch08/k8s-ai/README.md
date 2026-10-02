@@ -1,5 +1,8 @@
 # k8s-ai
 
+Copied with permission of [the-gigi](https://github.com/the-gigi) from https://github.com/the-gigi/k8s-ai
+(v2.1.0 - the A2A server version used in Chapter 8).
+
 Kubernetes AI assistant with kubectl access. You can run it as an interactive CLI chatbot or as an [A2A (Agent-to-Agent)](https://a2a-protocol.org/) server to interact with your Kubernetes clusters in natural language.
 
 ## Features
@@ -15,6 +18,24 @@ Kubernetes AI assistant with kubectl access. You can run it as an interactive CL
 
 ```shell
 uv sync
+```
+
+## Configure the LLM
+
+k8s-ai uses an OpenAI-compatible chat API with tool calling.
+
+**OpenAI** (uses `gpt-4o` by default):
+
+```shell
+export OPENAI_API_KEY=sk-your-openai-api-key
+```
+
+**Ollama** (or any other OpenAI-compatible server):
+
+```shell
+export OPENAI_API_KEY=ollama                         # any non-empty value works for Ollama
+export OPENAI_BASE_URL=http://localhost:11434/v1     # Ollama's OpenAI-compatible endpoint
+export K8S_AI_MODEL=llama3.1:8b                      # a tool-capable model you have pulled
 ```
 
 # Usage
