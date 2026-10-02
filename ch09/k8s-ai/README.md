@@ -1,5 +1,8 @@
 # k8s-ai
 
+Copied with permission of [the-gigi](https://github.com/the-gigi) from https://github.com/the-gigi/k8s-ai
+(v2.2.0 - the session-based, read-only diagnostics A2A server used by MAKDO in Chapter 9).
+
 Kubernetes AI assistant with kubectl access. You can run it as an interactive CLI chatbot or as an [A2A (Agent-to-Agent)](https://a2a-protocol.org/) server to interact with your Kubernetes clusters in natural language.
 
 ## Features
@@ -15,6 +18,16 @@ Kubernetes AI assistant with kubectl access. You can run it as an interactive CL
 
 ```shell
 uv sync
+```
+
+## LLM configuration (CLI mode only)
+
+The A2A server's diagnostic skills don't call an LLM. The interactive CLI does:
+
+```shell
+export OPENAI_API_KEY=sk-your-openai-api-key       # OpenAI, gpt-4o by default
+# -- or, for Ollama --
+export OPENAI_API_KEY=ollama OPENAI_BASE_URL=http://localhost:11434/v1 K8S_AI_MODEL=llama3.1:8b
 ```
 
 # Usage
