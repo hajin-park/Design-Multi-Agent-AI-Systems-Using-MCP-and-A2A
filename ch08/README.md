@@ -40,7 +40,7 @@ ch08/
 - For the A2A parts: [uv](https://docs.astral.sh/uv/getting-started/installation/), Docker,
   [kind](https://kind.sigs.k8s.io/docs/user/quick-start/#installation) and `kubectl`
 - Optional, only needed by the tools of the same name: `git`, `kubectl`, `ollama`, `aws`,
-  [`gh`](https://cli.github.com/) (for the `gh` MCP tool), and an
+  [`gh`](https://cli.github.com/) (for the `gh` MCP tool; log in with `gh auth login`), and an
   [Anthropic API key](https://platform.claude.com/) (for the `claude` tool)
 
 ## Setup
@@ -213,6 +213,7 @@ python -m unittest discover -s backend/tests
 | The agent answers without using tools | Use a model that supports tool calling (see [Ollama tool models](https://ollama.com/search?c=tools)). |
 | `Warning: Failed to connect to MCP server ...github_mcp_server.sh` | Install `jq`. |
 | `gh: command not found` in a tool result | Install the [GitHub CLI](https://cli.github.com/) and run `gh auth login`. |
+| `To get started with GitHub CLI, please run: gh auth login` in a tool result | Run `gh auth login` (or set `GH_TOKEN`). |
 | `Warning: Failed to discover A2A server` | Start the k8s-ai server first and check `url` / `api_key` in `a2a_servers`. |
 | A2A calls return `Authentication failed` | `A2A_API_KEY` must match the server's `--auth-key`. |
 | Chainlit fails with `No module named 'requests'` | `pip install -r requirements.txt` again (it pins `requests`, which a Chainlit dependency forgets to declare). |

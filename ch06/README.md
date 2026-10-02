@@ -35,7 +35,7 @@ ch06/ai-six/
     `ollama pull llama3.1:8b` (other tool-capable models such as `qwen3`, `gpt-oss` or `gemma4` work too), or
   - an **OpenAI API key** (the book uses `gpt-4o`)
 - Optional, only needed by the tools of the same name: `git`, `kubectl`, `ollama`,
-  [`gh`](https://cli.github.com/) (for the `github` tool), and an
+  [`gh`](https://cli.github.com/) (for the `github` tool; log in with `gh auth login`), and an
   [Anthropic API key](https://platform.claude.com/) (for the `claude` tool)
 
 ## Setup

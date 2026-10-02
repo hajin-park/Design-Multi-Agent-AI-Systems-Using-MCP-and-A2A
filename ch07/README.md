@@ -44,7 +44,7 @@ ch07/ai-six/
   - an **OpenAI API key** (the book uses `gpt-4o`)
 - [`jq`](https://jqlang.org/download/) - used by the `github_mcp_server.sh` MCP server
 - Optional, only needed by the tools of the same name: `git`, `kubectl`, `ollama`, `aws`,
-  [`gh`](https://cli.github.com/) (for the `gh` MCP tool), and an
+  [`gh`](https://cli.github.com/) (for the `gh` MCP tool; log in with `gh auth login`), and an
   [Anthropic API key](https://platform.claude.com/) (for the `claude` tool)
 
 ## Setup
@@ -195,6 +195,7 @@ python -m unittest discover -s backend/tests
 | The agent answers without using tools | Use a model that supports tool calling (see [Ollama tool models](https://ollama.com/search?c=tools)). |
 | `Warning: Failed to connect to MCP server ...github_mcp_server.sh` | Install `jq`. |
 | `gh: command not found` in a tool result | Install the [GitHub CLI](https://cli.github.com/) and run `gh auth login`. |
+| `To get started with GitHub CLI, please run: gh auth login` in a tool result | Run `gh auth login` (or set `GH_TOKEN`). |
 | `Warning: Failed to connect to remote MCP server` | Check the server is running and the URL (SSE endpoint, usually `/sse`). |
 | Chainlit fails with `No module named 'requests'` | `pip install -r requirements.txt` again (it pins `requests`, which a Chainlit dependency forgets to declare). |
 | Slack: `AI6_APP_TOKEN and AI6_BOT_TOKEN must be set` | Put both tokens in `py/.env` (see the Slack README). |
