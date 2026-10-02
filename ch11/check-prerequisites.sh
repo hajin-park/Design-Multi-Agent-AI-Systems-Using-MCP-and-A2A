@@ -36,7 +36,7 @@ fi
 # Check kubectl
 echo -n "Checking kubectl... "
 if command -v kubectl &> /dev/null; then
-    KUBECTL_VERSION=$(kubectl version --client --short 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+    KUBECTL_VERSION=$(kubectl version --client 2>/dev/null | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
     echo -e "${GREEN}✓${NC} kubectl $KUBECTL_VERSION"
 else
     echo -e "${RED}✗${NC} kubectl not found"
@@ -81,6 +81,23 @@ else
     echo -e "${GREEN}No existing kind clusters found${NC}"
 fi
 
+# Check that the host ports used by the kind clusters are free
+echo ""
+echo -n "Checking host ports 8080 9090 8100 8099 8200... "
+BUSY_PORTS=""
+for port in 8080 9090 8100 8099 8200; do
+    if lsof -nP -iTCP:$port -sTCP:LISTEN &> /dev/null; then
+        BUSY_PORTS="$BUSY_PORTS $port"
+    fi
+done
+if [ -n "$BUSY_PORTS" ]; then
+    echo -e "${RED}✗${NC} in use:$BUSY_PORTS"
+    echo "  → control-cluster.yaml / worker-cluster.yaml map these ports; free them (e.g. delete old makdo clusters)"
+    ALL_GOOD=false
+else
+    echo -e "${GREEN}✓${NC} free"
+fi
+
 # Check available disk space
 echo ""
 echo -n "Checking disk space... "
@@ -112,8 +129,8 @@ if [ "$ALL_GOOD" = true ]; then
     echo -e "${GREEN}✓ All prerequisites met!${NC}"
     echo ""
     echo "You can proceed with cluster creation:"
-    echo "  1. Create control cluster: kind create cluster --name makdo-control --config control-cluster.yaml"
-    echo "  2. Create worker cluster: kind create cluster --name makdo-worker --config worker-cluster.yaml"
+    echo "  1. Create control cluster: kind create cluster --config control-cluster.yaml"
+    echo "  2. Create worker cluster: kind create cluster --config worker-cluster.yaml"
 else
     echo -e "${RED}✗ Some prerequisites missing${NC}"
     echo ""

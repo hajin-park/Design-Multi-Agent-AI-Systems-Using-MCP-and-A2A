@@ -13,17 +13,17 @@ NC='\033[0m' # No Color
 echo "Testing cross-cluster connectivity..."
 echo ""
 
-# Switch to control cluster
-kubectl config use-context kind-makdo-control > /dev/null
+# Run the test pods in the control cluster (without changing your current kubectl context)
+CONTROL_CONTEXT=${CONTROL_CONTEXT:-kind-makdo-control}
 
 echo "1. Testing from control cluster to worker cluster's Kubernetes API..."
 # Try to reach worker cluster API from a pod in control cluster
-kubectl run connectivity-test --image=curlimages/curl:latest --restart=Never --rm -i --command -- \
-    curl -s -k https://makdo-worker-control-plane:6443/healthz || true
+kubectl --context "$CONTROL_CONTEXT" run connectivity-test --image=curlimages/curl:latest --restart=Never --rm -i --command -- \
+    sh -c 'sleep 2; echo "healthz: $(curl -s -k https://makdo-worker-control-plane:6443/healthz)"' || true
 
 echo ""
 echo "2. Testing DNS resolution in control cluster..."
-kubectl run dns-test --image=busybox:latest --restart=Never --rm -i --command -- \
+kubectl --context "$CONTROL_CONTEXT" run dns-test --image=busybox:latest --restart=Never --rm -i --command -- \
     nslookup kubernetes.default.svc.cluster.local
 
 echo ""
